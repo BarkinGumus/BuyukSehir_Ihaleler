@@ -22,10 +22,12 @@ HEADERS = {
 
 _TYPE_KEYWORDS = (
     ("hizmet alımı", TenderType.HIZMET_ALIMI),
+    ("hizmeti alınacaktır", TenderType.HIZMET_ALIMI),
     ("mal alımı", TenderType.MAL_ALIMI),
     ("yapım işi", TenderType.YAPIM_ISI),
     ("taşınmaz satışı", TenderType.TASINMAZ_SATIS),
     ("kiralama", TenderType.KIRALAMA),
+    ("kiraya ver", TenderType.KIRALAMA),
     ("kat karşılığı", TenderType.KAT_KARSILIGI),
 )
 
