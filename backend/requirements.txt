@@ -1,0 +1,6 @@
+httpx
+beautifulsoup4
+pydantic
+pydantic-settings
+sqlalchemy
+psycopg[binary]
