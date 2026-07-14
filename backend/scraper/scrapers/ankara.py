@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from scraper.config import MIN_TENDER_DATE
 from scraper.models import TenderRecord, TenderType
 from scraper.scrapers.base import BaseScraper
-from scraper.text_utils import turkish_lower
+from scraper.text_utils import extract_procedure
 
 LIST_URL = "https://www.ankara.bel.tr/ihaleler"
 DETAIL_URL_TEMPLATE = "https://www.ankara.bel.tr/ihaleler/detay/{id}"
@@ -30,16 +30,6 @@ _TYPE_MAP = {
     "Kat Karşılığı": TenderType.KAT_KARSILIGI,
 }
 
-_PROCEDURE_KEYWORDS = (
-    ("açık ihale usulü", "Açık İhale Usulü"),
-    ("belli istekliler arasında ihale usulü", "Belli İstekliler Arasında İhale Usulü"),
-    ("açık teklif arttırma usulü", "Açık Teklif Arttırma Usulü"),
-    ("açık teklif usulü", "Açık Teklif Usulü"),
-    ("kapalı teklif usulü", "Kapalı Teklif Usulü"),
-    ("pazarlık usulü", "Pazarlık Usulü"),
-)
-
-
 def _parse_datetime(text: str) -> datetime | None:
     text = text.strip()
     if not text:
@@ -48,14 +38,6 @@ def _parse_datetime(text: str) -> datetime | None:
         return datetime.strptime(text, "%d.%m.%Y %H:%M")
     except ValueError:
         return None
-
-
-def _extract_procedure(text: str) -> str | None:
-    lowered = turkish_lower(text)
-    for keyword, display in _PROCEDURE_KEYWORDS:
-        if keyword in lowered:
-            return display
-    return None
 
 
 def _parse_list_item(item) -> dict:
@@ -124,7 +106,7 @@ def _to_tender_record(list_item: dict, detail_values: dict, ilan_metni: str) -> 
         ikn=ikn,
         title=detail_values.get("İhale Konusu") or list_item["title"],
         tender_type=list_item["tender_type"],
-        procedure=_extract_procedure(procedure_source),
+        procedure=extract_procedure(procedure_source),
         tender_datetime=list_item["tender_datetime"],
         unit=detail_values.get("İhale Birimi") or list_item["unit"],
         status=None,

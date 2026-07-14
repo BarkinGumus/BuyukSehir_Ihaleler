@@ -5,9 +5,9 @@ import httpx
 from bs4 import BeautifulSoup
 
 from scraper.config import MIN_TENDER_DATE
-from scraper.models import TenderRecord, TenderType
+from scraper.models import TenderRecord
 from scraper.scrapers.base import BaseScraper
-from scraper.text_utils import turkish_lower
+from scraper.text_utils import classify_tender_type
 
 API_URL = "https://webapi.ibb.istanbul/api/ihaleler"
 DETAIL_URL_TEMPLATE = "https://ibb.istanbul/ibb/ihaleler/ihale-ilanlari/{slug}"
@@ -21,24 +21,6 @@ HEADERS = {
     )
 }
 
-_TYPE_KEYWORDS = (
-    ("hizmet alımı", TenderType.HIZMET_ALIMI),
-    ("hizmeti alınacaktır", TenderType.HIZMET_ALIMI),
-    ("mal alımı", TenderType.MAL_ALIMI),
-    ("yapım işi", TenderType.YAPIM_ISI),
-    ("taşınmaz satışı", TenderType.TASINMAZ_SATIS),
-    ("kiralama", TenderType.KIRALAMA),
-    ("kiraya ver", TenderType.KIRALAMA),
-    ("kat karşılığı", TenderType.KAT_KARSILIGI),
-)
-
-
-def _classify_tender_type(text: str) -> TenderType:
-    lowered = turkish_lower(text)
-    for keyword, tender_type in _TYPE_KEYWORDS:
-        if keyword in lowered:
-            return tender_type
-    return TenderType.DIGER
 
 
 _PHONE_RE = re.compile(
@@ -94,7 +76,7 @@ def _to_tender_record(item: dict) -> TenderRecord:
         external_id=attrs.get("ikn") or attrs["slug"],
         ikn=attrs.get("ikn"),
         title=attrs["konu"],
-        tender_type=_classify_tender_type(classify_source),
+        tender_type=classify_tender_type(classify_source),
         procedure=attrs.get("usul"),
         tender_datetime=attrs.get("tarih"),
         unit=_extract_unit(attrs.get("ilanMetni") or ""),
