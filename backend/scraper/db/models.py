@@ -29,7 +29,7 @@ class Tender(Base):
     duration: Mapped[str | None] = mapped_column(Text)
     venue: Mapped[str | None] = mapped_column(Text)
     address: Mapped[str | None] = mapped_column(Text)
-    phone: Mapped[str | None] = mapped_column(String(50))
+    phone: Mapped[str | None] = mapped_column(Text)
     detail_url: Mapped[str] = mapped_column(Text)
     doc_url: Mapped[str | None] = mapped_column(Text)
     raw_data: Mapped[dict] = mapped_column(JSONB, default=dict)

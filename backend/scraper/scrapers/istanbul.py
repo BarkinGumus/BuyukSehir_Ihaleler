@@ -108,5 +108,8 @@ def _iter_pages(page_size: int = PAGE_SIZE, max_pages: int | None = None):
 class IstanbulScraper(BaseScraper):
     source_name = "istanbul"
 
+    def __init__(self, max_pages: int | None = None):
+        self.max_pages = max_pages
+
     def fetch(self) -> list[TenderRecord]:
-        return [_to_tender_record(item) for item in _iter_pages()]
+        return [_to_tender_record(item) for item in _iter_pages(max_pages=self.max_pages)]
