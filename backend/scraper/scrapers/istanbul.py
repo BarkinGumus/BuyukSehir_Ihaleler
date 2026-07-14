@@ -3,6 +3,7 @@ import time
 import httpx
 from bs4 import BeautifulSoup
 
+from scraper.config import MIN_TENDER_DATE
 from scraper.models import TenderRecord, TenderType
 from scraper.scrapers.base import BaseScraper
 
@@ -98,7 +99,11 @@ def _iter_pages(page_size: int = PAGE_SIZE, max_pages: int | None = None):
         while True:
             resp = client.get(
                 API_URL,
-                params={"pagination[page]": page, "pagination[pageSize]": page_size},
+                params={
+                    "pagination[page]": page,
+                    "pagination[pageSize]": page_size,
+                    "filters[tarih][$gte]": f"{MIN_TENDER_DATE.isoformat()}T00:00:00.000Z",
+                },
             )
             resp.raise_for_status()
             payload = resp.json()

@@ -1,6 +1,7 @@
 import argparse
 import logging
 
+from scraper.config import MIN_TENDER_DATE
 from scraper.db.base import SessionLocal, create_tables
 from scraper.db.upsert import upsert_tender
 from scraper.scrapers.base import BaseScraper
@@ -16,7 +17,11 @@ def run(scrapers: list[BaseScraper] | None = None) -> None:
     session = SessionLocal()
     try:
         for scraper in scrapers:
-            records = scraper.fetch()
+            fetched = scraper.fetch()
+            records = [
+                r for r in fetched if r.tender_datetime and r.tender_datetime.date() >= MIN_TENDER_DATE
+            ]
+            skipped = len(fetched) - len(records)
 
             new_count = 0
             updated_count = 0
@@ -28,11 +33,13 @@ def run(scrapers: list[BaseScraper] | None = None) -> None:
             session.commit()
 
             logger.info(
-                "%s: %d yeni, %d güncellenen (toplam %d kayıt)",
+                "%s: %d yeni, %d güncellenen, %d elendi (%s öncesi/tarihsiz) - toplam %d çekildi",
                 scraper.source_name,
                 new_count,
                 updated_count,
-                len(records),
+                skipped,
+                MIN_TENDER_DATE.isoformat(),
+                len(fetched),
             )
     finally:
         session.close()

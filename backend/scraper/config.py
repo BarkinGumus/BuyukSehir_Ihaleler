@@ -1,3 +1,5 @@
+from datetime import date
+
 from pydantic_settings import BaseSettings
 
 
@@ -8,3 +10,6 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+# Uygulama genelinde geçerli kural: bu tarihten önceki ihaleler hiçbir şehirde kabul edilmez.
+MIN_TENDER_DATE = date(2026, 1, 1)
