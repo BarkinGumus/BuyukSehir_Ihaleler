@@ -1,3 +1,4 @@
+import re
 import time
 from datetime import datetime
 
@@ -94,6 +95,7 @@ def _parse_detail(html: str) -> tuple[dict, str]:
         info = div.find("div", class_="info")
         if label:
             text = info.get_text(" ", strip=True) if info else ""
+            text = re.sub(r"\s+", " ", text)
             values[label.get_text(strip=True)] = text or None
 
     ilan_metni = ""
@@ -102,6 +104,7 @@ def _parse_detail(html: str) -> tuple[dict, str]:
         if title_el and "İhale Metni" in title_el.get_text():
             body = card.find(class_="card-body")
             ilan_metni = body.get_text(" ", strip=True) if body else ""
+            ilan_metni = re.sub(r"\s+", " ", ilan_metni)
             break
 
     return values, ilan_metni
