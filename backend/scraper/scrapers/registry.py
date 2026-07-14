@@ -1,1 +1,6 @@
-# Faz 2+: aktif scraper sınıflarının listesi burada olacak.
+from scraper.scrapers.base import BaseScraper
+from scraper.scrapers.istanbul import IstanbulScraper
+
+SCRAPERS: list[BaseScraper] = [
+    IstanbulScraper(),
+]
