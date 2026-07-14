@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from scraper.config import MIN_TENDER_DATE
 from scraper.models import TenderRecord, TenderType
 from scraper.scrapers.base import BaseScraper
+from scraper.text_utils import turkish_lower
 
 API_URL = "https://webapi.ibb.istanbul/api/ihaleler"
 DETAIL_URL_TEMPLATE = "https://ibb.istanbul/ibb/ihaleler/ihale-ilanlari/{slug}"
@@ -32,14 +33,8 @@ _TYPE_KEYWORDS = (
 )
 
 
-def _turkish_lower(text: str) -> str:
-    """str.lower() Türkçe İ/I harflerini yanlış çevirir (örn. 'TAŞINMAZ' -> 'taşinmaz',
-    doğrusu 'taşınmaz'); bu yüzden İ/I'yı önce elle değiştirip sonra lower() uyguluyoruz."""
-    return text.replace("İ", "i").replace("I", "ı").lower()
-
-
 def _classify_tender_type(text: str) -> TenderType:
-    lowered = _turkish_lower(text)
+    lowered = turkish_lower(text)
     for keyword, tender_type in _TYPE_KEYWORDS:
         if keyword in lowered:
             return tender_type
