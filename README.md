@@ -1,2 +1,1 @@
-# RossmanForecasting
 # BuyukSehir_Ihaleler
