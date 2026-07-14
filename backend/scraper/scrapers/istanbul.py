@@ -43,13 +43,23 @@ def _classify_tender_type(text: str) -> TenderType:
 
 
 def _extract_unit(ilan_metni: str) -> str | None:
-    """İlan metninin '1-İdarenin ... a) Adı : X' tablosundan idare adını (birim) çıkarır."""
+    """İlan metninin '1-İdarenin ... a) Adı : X' tablosundan idare adını (birim) çıkarır.
+
+    Arama, "İdarenin" başlığını içeren tabloyla sınırlı tutuluyor; aksi halde
+    bazı ilanlarda bu tabloda "a) Adı" satırı hiç olmadığından (direkt "a) Adresi"
+    ile başlıyor), arama belgenin ilerisindeki alakasız bir tabloya (örn. iş
+    kalemi açıklamaları) kayıp çöp değer döndürebiliyor.
+    """
     soup = BeautifulSoup(ilan_metni, "html.parser")
-    for cell in soup.find_all("td"):
-        if "Adı" in cell.get_text():
-            value_cell = cell.find_next("td").find_next("td")
-            if value_cell:
-                return value_cell.get_text(strip=True)
+    for table in soup.find_all("table"):
+        if "İdarenin" not in table.get_text():
+            continue
+        for cell in table.find_all("td"):
+            if "Adı" in cell.get_text():
+                value_cell = cell.find_next("td").find_next("td")
+                if value_cell:
+                    return value_cell.get_text(strip=True)
+        return None
     return None
 
 
