@@ -1,3 +1,4 @@
+import re
 import time
 
 import httpx
@@ -43,6 +44,27 @@ def _classify_tender_type(text: str) -> TenderType:
     return TenderType.DIGER
 
 
+_PHONE_RE = re.compile(
+    r"Telefon(?:\s+ve\s+faks)?\s+numaras[ıi]\s*:\s*(.+?)"
+    r"(?=\s+[a-zçğıöşüA-ZÇĞİÖŞÜ]\)|\s+\d+\.\d+\.|\s{2,}|$)",
+    re.IGNORECASE,
+)
+
+
+def _extract_phone(ilan_metni: str, fallback: str | None) -> str | None:
+    """Telefonu ilanMetni'nden çeker; API'nin düz 'telefon' alanı bazı kayıtlarda
+    yanlışlıkla IKN içeriyor (kullanıcı bunu fark etti), ilanMetni'ndeki metin
+    daha güvenilir. Bazı ilan şablonlarında (örn. taşınmaz satışı, 'Tel: ...'
+    şeklinde) bu kalıp uyuşmuyor; o durumda API'nin alanına geri dönüyoruz.
+    """
+    text = BeautifulSoup(ilan_metni, "html.parser").get_text(separator=" ")
+    text = re.sub(r"\s+", " ", text)
+    match = _PHONE_RE.search(text)
+    if match:
+        return match.group(1).strip()
+    return fallback
+
+
 def _extract_unit(ilan_metni: str) -> str | None:
     """İlan metninin '1-İdarenin ... a) Adı : X' tablosundan idare adını (birim) çıkarır.
 
@@ -85,7 +107,7 @@ def _to_tender_record(item: dict) -> TenderRecord:
         duration=attrs.get("teslimSuresi"),
         venue=attrs.get("ihaleYeri"),
         address=attrs.get("adres"),
-        phone=attrs.get("telefon"),
+        phone=_extract_phone(attrs.get("ilanMetni") or "", fallback=attrs.get("telefon")),
         detail_url=DETAIL_URL_TEMPLATE.format(slug=attrs["slug"]),
         doc_url=None,
         raw_data={k: str(v) for k, v in attrs.items() if v is not None},
