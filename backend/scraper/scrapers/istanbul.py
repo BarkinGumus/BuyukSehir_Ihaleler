@@ -89,6 +89,8 @@ def _to_tender_record(item: dict) -> TenderRecord:
         phone=_extract_phone(attrs.get("ilanMetni") or "", fallback=attrs.get("telefon")),
         detail_url=DETAIL_URL_TEMPLATE.format(slug=attrs["slug"]),
         doc_url=None,
+        province="İstanbul",
+        institution="İstanbul Büyükşehir Belediyesi",
         raw_data={k: str(v) for k, v in attrs.items() if v is not None},
     )
 

@@ -119,6 +119,8 @@ def _to_tender_record(list_item: dict, detail_values: dict, full_text: str) -> T
         phone=detail_values.get("1.3. Telefon numarası"),
         detail_url=list_item["detail_url"],
         doc_url=None,
+        province="Kocaeli",
+        institution="Kocaeli Büyükşehir Belediyesi",
         raw_data={
             **{k: v for k, v in detail_values.items() if v},
             "tam_metin": full_text,

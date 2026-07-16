@@ -32,4 +32,6 @@ class TenderRecord(BaseModel):
     phone: str | None = None
     detail_url: str
     doc_url: str | None = None
+    province: str | None = None
+    institution: str | None = None
     raw_data: dict[str, str] = Field(default_factory=dict)

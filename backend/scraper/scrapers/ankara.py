@@ -119,6 +119,8 @@ def _to_tender_record(list_item: dict, detail_values: dict, ilan_metni: str) -> 
         phone=detail_values.get("İdare'nin Telefonu"),
         detail_url=DETAIL_URL_TEMPLATE.format(id=detail_id),
         doc_url=None,
+        province="Ankara",
+        institution="Ankara Büyükşehir Belediyesi",
         raw_data={
             **{k: v for k, v in detail_values.items() if v},
             "ihale_turu": list_item.get("tender_type_label") or "",
