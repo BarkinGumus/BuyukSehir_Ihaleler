@@ -7,8 +7,10 @@ import { FilterBar } from "@/components/FilterBar";
 import { SearchBar } from "@/components/SearchBar";
 import { Sidebar } from "@/components/Sidebar";
 import { StatsRow } from "@/components/StatsRow";
+import { TenderDetailDrawer } from "@/components/TenderDetailDrawer";
 import { TenderTable } from "@/components/TenderTable";
 import { TopBar } from "@/components/TopBar";
+import { useSelectedTender } from "@/hooks/useSelectedTender";
 import { useTenderFilters } from "@/hooks/useTenderFilters";
 import { getTenders, getTenderStats } from "@/lib/api";
 
@@ -16,6 +18,7 @@ const PAGE_SIZE = 50;
 
 export default function Home() {
   const { filters } = useTenderFilters();
+  const { selectTender } = useSelectedTender();
   const [page, setPage] = useState(1);
 
   // Filtreler değişince sayfa 1'e dönsün (eski sayfa numarasıyla boş sonuç
@@ -72,9 +75,11 @@ export default function Home() {
             pageSize={tendersData?.page_size ?? PAGE_SIZE}
             total={tendersData?.total ?? 0}
             onPageChange={setPage}
+            onRowClick={selectTender}
           />
         </div>
       </main>
+      <TenderDetailDrawer />
     </div>
   );
 }

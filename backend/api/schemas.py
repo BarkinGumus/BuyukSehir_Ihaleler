@@ -38,3 +38,15 @@ class TenderListOut(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+class TenderStatsOut(BaseModel):
+    total: int
+    new_count: int
+    upcoming_count: int
+    source_count: int
+
+
+class TenderFilterOptionsOut(BaseModel):
+    cities: list[str]
+    procedures: list[str]

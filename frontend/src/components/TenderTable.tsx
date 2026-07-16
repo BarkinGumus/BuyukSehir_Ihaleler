@@ -27,53 +27,43 @@ function isUpcoming(iso: string | null): boolean {
   return iso ? new Date(iso) >= new Date() : false;
 }
 
+// Kırpma (truncate + ellipsis) TableRow'daki hücre sarmalayıcısında (block
+// seviyeli div) uygulanıyor - burada sadece metin rengi/font stiline bakıyoruz.
 const columns = [
   columnHelper.accessor("title", {
     header: "İhale Konusu",
     cell: (info) => (
-      <span className="truncate pr-4 text-body-default text-on-surface group-hover:text-primary">
+      <span className="text-body-default text-on-surface group-hover:text-primary">
         {info.getValue()}
       </span>
     ),
   }),
   columnHelper.accessor("province", {
     header: "Şehir",
-    cell: (info) => (
-      <span className="truncate pr-4 text-body-default text-on-surface">
-        {info.getValue() ?? "—"}
-      </span>
-    ),
+    cell: (info) => <span className="text-body-default text-on-surface">{info.getValue() ?? "—"}</span>,
   }),
   columnHelper.accessor("ikn", {
     header: "İKN",
     cell: (info) => (
-      <span className="truncate pr-4 font-data-mono text-data-mono text-secondary">
-        {info.getValue() ?? "—"}
-      </span>
+      <span className="font-data-mono text-data-mono text-secondary">{info.getValue() ?? "—"}</span>
     ),
   }),
   columnHelper.accessor("tender_type", {
     header: "Tür",
     cell: (info) => (
-      <span className="truncate pr-4 text-body-default text-on-surface">
-        {TENDER_TYPE_LABELS[info.getValue()]}
-      </span>
+      <span className="text-body-default text-on-surface">{TENDER_TYPE_LABELS[info.getValue()]}</span>
     ),
   }),
   columnHelper.accessor("tender_datetime", {
     header: "Tarih",
     cell: (info) => (
-      <span className="truncate pr-4 font-data-mono text-data-mono text-secondary">
-        {formatDate(info.getValue())}
-      </span>
+      <span className="font-data-mono text-data-mono text-secondary">{formatDate(info.getValue())}</span>
     ),
   }),
   columnHelper.accessor("unit", {
     header: "Birim",
     cell: (info) => (
-      <span className="truncate pr-4 text-body-default text-on-surface-variant">
-        {info.getValue() ?? "—"}
-      </span>
+      <span className="text-body-default text-on-surface-variant">{info.getValue() ?? "—"}</span>
     ),
   }),
   columnHelper.display({
@@ -82,8 +72,8 @@ const columns = [
     cell: (info) => {
       const active = isUpcoming(info.row.original.tender_datetime);
       return (
-        <div className="flex items-center gap-2 truncate">
-          <span className={`h-1.5 w-1.5 rounded-full ${active ? "bg-[#34D399]" : "bg-[#8B95A7]"}`} />
+        <div className="flex items-center gap-2">
+          <span className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${active ? "bg-[#34D399]" : "bg-[#8B95A7]"}`} />
           <span className="text-body-default text-on-surface">{active ? "Aktif" : "Geçmiş"}</span>
         </div>
       );
@@ -97,9 +87,17 @@ interface TenderTableProps {
   pageSize: number;
   total: number;
   onPageChange: (page: number) => void;
+  onRowClick: (id: number) => void;
 }
 
-export function TenderTable({ tenders, page, pageSize, total, onPageChange }: TenderTableProps) {
+export function TenderTable({
+  tenders,
+  page,
+  pageSize,
+  total,
+  onPageChange,
+  onRowClick,
+}: TenderTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
@@ -132,7 +130,7 @@ export function TenderTable({ tenders, page, pageSize, total, onPageChange }: Te
 
       <div className="hide-scrollbar flex w-full flex-1 flex-col overflow-y-auto">
         {table.getRowModel().rows.map((row) => (
-          <TableRow key={row.id} row={row} gridColsClassName={GRID_COLS} />
+          <TableRow key={row.id} row={row} gridColsClassName={GRID_COLS} onClick={onRowClick} />
         ))}
         {table.getRowModel().rows.length === 0 && (
           <div className="flex flex-1 items-center justify-center py-12 text-body-default text-on-surface-variant">
