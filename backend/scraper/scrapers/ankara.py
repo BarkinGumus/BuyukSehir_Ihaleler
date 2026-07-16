@@ -6,6 +6,8 @@ import httpx
 from bs4 import BeautifulSoup
 
 from scraper.config import MIN_TENDER_DATE
+from scraper.db.base import SessionLocal
+from scraper.db.queries import get_known_tender_dates, touch_last_seen
 from scraper.models import TenderRecord, TenderType
 from scraper.scrapers.base import BaseScraper
 from scraper.text_utils import extract_procedure
@@ -168,12 +170,29 @@ class AnkaraScraper(BaseScraper):
         self.max_pages = max_pages
 
     def fetch(self) -> list[TenderRecord]:
+        with SessionLocal() as session:
+            known_dates = get_known_tender_dates(session, self.source_name)
+
         records = []
+        unchanged_ids = []
         with httpx.Client(headers=HEADERS, timeout=30) as client:
             for list_item in _iter_list_items(client, max_pages=self.max_pages):
+                external_id = list_item["ikn"] or list_item["detail_id"]
+
+                # Liste sayfası zaten IKN + tam tarih/saat veriyor: DB'deki tarihle
+                # birebir aynıysa hiçbir şey değişmemiş demektir, detay isteğini atla.
+                if external_id in known_dates and known_dates[external_id] == list_item["tender_datetime"]:
+                    unchanged_ids.append(external_id)
+                    continue
+
                 resp = client.get(DETAIL_URL_TEMPLATE.format(id=list_item["detail_id"]))
                 resp.raise_for_status()
                 detail_values, ilan_metni = _parse_detail(resp.text)
                 records.append(_to_tender_record(list_item, detail_values, ilan_metni))
                 time.sleep(REQUEST_DELAY_SECONDS)
+
+        if unchanged_ids:
+            with SessionLocal() as session:
+                touch_last_seen(session, self.source_name, unchanged_ids)
+
         return records

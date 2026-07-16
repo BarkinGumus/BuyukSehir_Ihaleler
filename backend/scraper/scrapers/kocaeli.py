@@ -6,6 +6,8 @@ import httpx
 from bs4 import BeautifulSoup
 
 from scraper.config import MIN_TENDER_DATE
+from scraper.db.base import SessionLocal
+from scraper.db.queries import get_known_detail_urls, touch_last_seen_by_detail_url
 from scraper.models import TenderRecord
 from scraper.scrapers.base import BaseScraper
 from scraper.text_utils import classify_tender_type, extract_procedure
@@ -173,12 +175,29 @@ class KocaeliScraper(BaseScraper):
         self.max_batches = max_batches
 
     def fetch(self) -> list[TenderRecord]:
+        with SessionLocal() as session:
+            known_urls = get_known_detail_urls(session, self.source_name)
+
         records = []
+        unchanged_urls = []
         with httpx.Client(headers=HEADERS, timeout=30) as client:
             for list_item in _iter_list_items(client, max_batches=self.max_batches):
+                # Liste sadece haberin YAYIN tarihini veriyor (ihalenin kendi tarihini
+                # değil, bkz. modül docstring'i), o yüzden tarih karşılaştırması
+                # güvenilir değil. Bunun yerine: bu haberi daha önce hiç gördük mü?
+                # Kocaeli'nin haber sayfaları yayınlandıktan sonra pratikte değişmiyor.
+                if list_item["detail_url"] in known_urls:
+                    unchanged_urls.append(list_item["detail_url"])
+                    continue
+
                 resp = client.get(list_item["detail_url"])
                 resp.raise_for_status()
                 detail_values, full_text = _parse_detail(resp.text)
                 records.append(_to_tender_record(list_item, detail_values, full_text))
                 time.sleep(REQUEST_DELAY_SECONDS)
+
+        if unchanged_urls:
+            with SessionLocal() as session:
+                touch_last_seen_by_detail_url(session, self.source_name, unchanged_urls)
+
         return records

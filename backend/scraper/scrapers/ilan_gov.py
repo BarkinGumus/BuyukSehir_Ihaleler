@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 
 from scraper.db.base import SessionLocal
 from scraper.db.models import ScraperRun
+from scraper.db.queries import get_known_tender_dates, touch_last_seen
 from scraper.models import TenderRecord, TenderType
 from scraper.scrapers.base import BaseScraper
 
@@ -178,11 +179,26 @@ class IlanGovScraper(BaseScraper):
         if last_success:
             ppdmin = (last_success.date() - timedelta(days=1)).strftime("%d.%m.%Y")
 
+        with SessionLocal() as session:
+            known_dates = get_known_tender_dates(session, SOURCE_NAME)
+
         records = []
+        unchanged_ids = []
         with httpx.Client(headers=HEADERS, timeout=30, verify=_build_ssl_context()) as client:
             for ad in _iter_ads(client, ppdmin):
                 if self.max_records is not None and len(records) >= self.max_records:
                     break
+
+                list_facets = {f["key"]: f["value"] for f in ad.get("adTypeFilters", [])}
+                external_id = list_facets.get("İhale Kayıt No") or str(ad["id"])
+                list_date = _parse_facet_datetime(list_facets.get("İhale ve Teklif Açma Tarihi"))
+
+                # Liste sadece gün hassasiyetinde tarih veriyor (saat yok), o yüzden
+                # sadece tarih kısmını karşılaştırıyoruz - detay isteği saat de verir.
+                known_date = known_dates.get(external_id)
+                if known_date and list_date and known_date.date() == list_date.date():
+                    unchanged_ids.append(external_id)
+                    continue
 
                 detail_resp = client.get(DETAIL_URL, params={"id": ad["id"]})
                 detail_resp.raise_for_status()
@@ -194,6 +210,10 @@ class IlanGovScraper(BaseScraper):
                 content_text = _extract_plain_text(content_html)
                 records.append(_to_tender_record(ad, facets, content_values, content_text))
                 time.sleep(REQUEST_DELAY_SECONDS)
+
+        if unchanged_ids:
+            with SessionLocal() as session:
+                touch_last_seen(session, SOURCE_NAME, unchanged_ids)
 
         _set_last_success(datetime.now(timezone.utc))
         return records
