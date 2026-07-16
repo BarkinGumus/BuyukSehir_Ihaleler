@@ -8,6 +8,7 @@ export type TenderStatusFilter = "aktif" | "gecmis";
 
 export interface TenderFilters {
   city?: string;
+  source?: string;
   type?: TenderType;
   procedure?: string;
   status?: TenderStatusFilter;
@@ -38,6 +39,7 @@ async function fetchJSON<T>(path: string, params: Record<string, string | number
 export async function getTenders(filters: TenderFilters = {}): Promise<TenderListResponse> {
   return fetchJSON<TenderListResponse>("/tenders", {
     city: filters.city,
+    source: filters.source,
     type: filters.type,
     procedure: filters.procedure,
     status: filters.status,
@@ -84,6 +86,7 @@ export async function getTenderStats(): Promise<TenderStats> {
 export interface TenderFilterOptions {
   cities: string[];
   procedures: string[];
+  sources: string[];
 }
 
 export async function getTenderFilterOptions(): Promise<TenderFilterOptions> {

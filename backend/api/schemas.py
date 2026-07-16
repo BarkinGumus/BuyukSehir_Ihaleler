@@ -50,3 +50,4 @@ class TenderStatsOut(BaseModel):
 class TenderFilterOptionsOut(BaseModel):
     cities: list[str]
     procedures: list[str]
+    sources: list[str]

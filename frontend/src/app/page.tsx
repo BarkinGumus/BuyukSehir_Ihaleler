@@ -40,6 +40,7 @@ export default function Home() {
     queryFn: () =>
       getTenders({
         city: filters.city || undefined,
+        source: filters.source || undefined,
         type: filters.type || undefined,
         procedure: filters.procedure || undefined,
         status: filters.status || undefined,

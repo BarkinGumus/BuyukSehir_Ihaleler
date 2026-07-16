@@ -52,3 +52,16 @@ export const TENDER_TYPE_LABELS: Record<TenderType, string> = {
   kat_karsiligi: "Kat Karşılığı",
   diger: "Diğer",
 };
+
+// Kayıtlı scraper kaynaklarının (source alanı) okunabilir adı. Yeni bir şehir
+// eklendiğinde buraya da bir satır eklemek gerekir.
+export const SOURCE_LABELS: Record<string, string> = {
+  istanbul: "İstanbul",
+  ankara: "Ankara",
+  kocaeli: "Kocaeli",
+  ilan_gov_tr: "ilan.gov.tr",
+};
+
+export function sourceLabel(source: string): string {
+  return SOURCE_LABELS[source] ?? source;
+}

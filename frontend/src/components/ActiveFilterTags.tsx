@@ -2,7 +2,7 @@
 
 import { X } from "lucide-react";
 import { useTenderFilters, type TenderFilterState } from "@/hooks/useTenderFilters";
-import { TENDER_TYPE_LABELS, type TenderType } from "@/lib/types";
+import { sourceLabel, TENDER_TYPE_LABELS, type TenderType } from "@/lib/types";
 
 const STATUS_LABELS: Record<string, string> = {
   aktif: "Aktif",
@@ -10,20 +10,20 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 interface Tag {
-  key: keyof TenderFilterState | "dateRange";
+  key: keyof TenderFilterState;
   label: string;
 }
 
 function buildTags(filters: TenderFilterState): Tag[] {
   const tags: Tag[] = [];
   if (filters.city) tags.push({ key: "city", label: filters.city });
+  if (filters.source) tags.push({ key: "source", label: sourceLabel(filters.source) });
   if (filters.type) tags.push({ key: "type", label: TENDER_TYPE_LABELS[filters.type as TenderType] });
   if (filters.procedure) tags.push({ key: "procedure", label: filters.procedure });
   if (filters.status) tags.push({ key: "status", label: STATUS_LABELS[filters.status] });
   if (filters.search) tags.push({ key: "search", label: `"${filters.search}"` });
-  if (filters.dateFrom || filters.dateTo) {
-    tags.push({ key: "dateRange", label: `${filters.dateFrom || "…"} → ${filters.dateTo || "…"}` });
-  }
+  if (filters.dateFrom) tags.push({ key: "dateFrom", label: `Başlangıç: ${filters.dateFrom}` });
+  if (filters.dateTo) tags.push({ key: "dateTo", label: `Bitiş: ${filters.dateTo}` });
   return tags;
 }
 
@@ -48,14 +48,7 @@ export function ActiveFilterTags({ resultCount }: { resultCount: number }) {
                 {tag.label}
                 <button
                   type="button"
-                  onClick={() => {
-                    if (tag.key === "dateRange") {
-                      clearFilter("dateFrom");
-                      clearFilter("dateTo");
-                    } else {
-                      clearFilter(tag.key as keyof TenderFilterState);
-                    }
-                  }}
+                  onClick={() => clearFilter(tag.key)}
                   className="transition-colors hover:text-primary"
                 >
                   <X size={12} />

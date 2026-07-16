@@ -3,47 +3,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTenderFilters } from "@/hooks/useTenderFilters";
 import { getTenderFilterOptions } from "@/lib/api";
-import { TENDER_TYPE_LABELS, type TenderType } from "@/lib/types";
+import { sourceLabel, TENDER_TYPE_LABELS, type TenderType } from "@/lib/types";
 
 const selectClass =
   "h-input-height min-w-[140px] rounded border border-outline-variant/14 bg-surface text-body-default text-on-surface focus:border-primary focus:ring-0";
 
-function toISODate(d: Date): string {
-  return d.toISOString().slice(0, 10);
-}
-
-// "Tarih" select'i tek bir alan ama dateFrom/dateTo çiftini set ediyor -
-// bu yüzden seçili değeri, mevcut dateFrom/dateTo'nun hangi hazır aralığa
-// karşılık geldiğine bakarak geri türetiyoruz.
-function datePreset(dateFrom: string, dateTo: string): string {
-  if (!dateFrom && !dateTo) return "";
-  const today = new Date();
-  const presets = buildDatePresets(today);
-  const match = Object.entries(presets).find(
-    ([, range]) => range.from === dateFrom && range.to === dateTo,
-  );
-  return match?.[0] ?? "";
-}
-
-function buildDatePresets(today: Date): Record<string, { from: string; to: string }> {
-  const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - ((today.getDay() + 6) % 7));
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 6);
-
-  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-
-  const next30 = new Date(today);
-  next30.setDate(today.getDate() + 30);
-
-  return {
-    bugun: { from: toISODate(today), to: toISODate(today) },
-    "bu-hafta": { from: toISODate(startOfWeek), to: toISODate(endOfWeek) },
-    "bu-ay": { from: toISODate(startOfMonth), to: toISODate(endOfMonth) },
-    "gelecek-30-gun": { from: toISODate(today), to: toISODate(next30) },
-  };
-}
+const dateFieldClass =
+  "h-input-height rounded border border-outline-variant/14 bg-surface px-2 text-body-default text-on-surface focus:border-primary focus:ring-0";
 
 export function FilterBar() {
   const { filters, setFilter } = useTenderFilters();
@@ -52,11 +18,8 @@ export function FilterBar() {
     queryFn: getTenderFilterOptions,
   });
 
-  const presets = buildDatePresets(new Date());
-  const selectedPreset = datePreset(filters.dateFrom, filters.dateTo);
-
   return (
-    <div className="flex w-full flex-wrap gap-3">
+    <div className="flex w-full flex-wrap items-end gap-3">
       <select
         className={selectClass}
         value={filters.city}
@@ -66,6 +29,19 @@ export function FilterBar() {
         {options?.cities.map((city) => (
           <option key={city} value={city}>
             {city}
+          </option>
+        ))}
+      </select>
+
+      <select
+        className={selectClass}
+        value={filters.source}
+        onChange={(e) => setFilter("source", e.target.value)}
+      >
+        <option value="">Kaynak</option>
+        {options?.sources.map((source) => (
+          <option key={source} value={source}>
+            {sourceLabel(source)}
           </option>
         ))}
       </select>
@@ -96,22 +72,31 @@ export function FilterBar() {
         ))}
       </select>
 
-      <select
-        className={selectClass}
-        value={selectedPreset}
-        onChange={(e) => {
-          const key = e.target.value;
-          const range = key ? presets[key] : null;
-          setFilter("dateFrom", range?.from ?? "");
-          setFilter("dateTo", range?.to ?? "");
-        }}
-      >
-        <option value="">Tarih</option>
-        <option value="bugun">Bugün</option>
-        <option value="bu-hafta">Bu Hafta</option>
-        <option value="bu-ay">Bu Ay</option>
-        <option value="gelecek-30-gun">Gelecek 30 Gün</option>
-      </select>
+      <label className="flex flex-col gap-1">
+        <span className="font-label-compact text-label-compact text-on-surface-variant">
+          Başlangıç Tarihi
+        </span>
+        <input
+          type="date"
+          className={dateFieldClass}
+          value={filters.dateFrom}
+          max={filters.dateTo || undefined}
+          onChange={(e) => setFilter("dateFrom", e.target.value)}
+        />
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="font-label-compact text-label-compact text-on-surface-variant">
+          Bitiş Tarihi
+        </span>
+        <input
+          type="date"
+          className={dateFieldClass}
+          value={filters.dateTo}
+          min={filters.dateFrom || undefined}
+          onChange={(e) => setFilter("dateTo", e.target.value)}
+        />
+      </label>
 
       <select
         className={selectClass}

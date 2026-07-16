@@ -7,6 +7,7 @@ import type { TenderType } from "@/lib/types";
 
 export interface TenderFilterState {
   city: string;
+  source: string;
   type: TenderType | "";
   procedure: string;
   status: TenderStatusFilter | "";
@@ -17,6 +18,7 @@ export interface TenderFilterState {
 
 const EMPTY_FILTERS: TenderFilterState = {
   city: "",
+  source: "",
   type: "",
   procedure: "",
   status: "",
@@ -29,6 +31,7 @@ const EMPTY_FILTERS: TenderFilterState = {
 // tutuyoruz ki paylaşılan linkler kısa olsun).
 const PARAM_KEYS: Record<keyof TenderFilterState, string> = {
   city: "city",
+  source: "kaynak",
   type: "type",
   procedure: "usul",
   status: "durum",
@@ -47,6 +50,7 @@ export function useTenderFilters() {
   const filters: TenderFilterState = useMemo(
     () => ({
       city: searchParams.get(PARAM_KEYS.city) ?? "",
+      source: searchParams.get(PARAM_KEYS.source) ?? "",
       type: (searchParams.get(PARAM_KEYS.type) as TenderType | null) ?? "",
       procedure: searchParams.get(PARAM_KEYS.procedure) ?? "",
       status: (searchParams.get(PARAM_KEYS.status) as TenderStatusFilter | null) ?? "",

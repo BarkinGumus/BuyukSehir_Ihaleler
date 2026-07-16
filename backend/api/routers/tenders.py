@@ -71,13 +71,17 @@ def get_filter_options(db: Session = Depends(get_db)) -> TenderFilterOptionsOut:
         .order_by(Tender.procedure)
         .all()
     ]
-    return TenderFilterOptionsOut(cities=_dedupe_case_insensitive(raw_cities), procedures=procedures)
+    sources = [row[0] for row in db.query(distinct(Tender.source)).order_by(Tender.source).all()]
+    return TenderFilterOptionsOut(
+        cities=_dedupe_case_insensitive(raw_cities), procedures=procedures, sources=sources
+    )
 
 
 @router.get("", response_model=TenderListOut)
 def list_tenders(
     db: Session = Depends(get_db),
     city: str | None = Query(None, description="İl adına göre filtrele (province), örn. İstanbul"),
+    source: str | None = Query(None, description="Kaynağa göre filtrele, örn. istanbul, ilan_gov_tr"),
     type: TenderType | None = Query(None, description="İhale türüne göre filtrele"),
     procedure: str | None = Query(None, description="İhale usulüne göre filtrele"),
     status: TenderStatusFilter | None = Query(None, description="aktif (yaklaşan) / gecmis"),
@@ -91,6 +95,8 @@ def list_tenders(
 
     if city:
         query = query.filter(Tender.province.ilike(city))
+    if source:
+        query = query.filter(Tender.source == source)
     if type:
         query = query.filter(Tender.tender_type == type.value)
     if procedure:

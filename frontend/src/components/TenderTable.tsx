@@ -12,9 +12,9 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { Pagination } from "./Pagination";
 import { TableRow } from "./TableRow";
-import { TENDER_TYPE_LABELS, type Tender } from "@/lib/types";
+import { sourceLabel, TENDER_TYPE_LABELS, type Tender } from "@/lib/types";
 
-const GRID_COLS = "grid-cols-[3fr_1fr_1.5fr_1fr_1fr_1.5fr_1fr]";
+const GRID_COLS = "grid-cols-[3fr_1fr_1fr_1.5fr_1fr_1fr_1.5fr_1fr]";
 
 const columnHelper = createColumnHelper<Tender>();
 
@@ -42,6 +42,12 @@ const columns = [
     header: "Şehir",
     cell: (info) => <span className="text-body-default text-on-surface">{info.getValue() ?? "—"}</span>,
   }),
+  columnHelper.accessor("source", {
+    header: "Kaynak",
+    cell: (info) => (
+      <span className="text-body-default text-on-surface-variant">{sourceLabel(info.getValue())}</span>
+    ),
+  }),
   columnHelper.accessor("ikn", {
     header: "İKN",
     cell: (info) => (
@@ -66,11 +72,14 @@ const columns = [
       <span className="text-body-default text-on-surface-variant">{info.getValue() ?? "—"}</span>
     ),
   }),
-  columnHelper.display({
+  // Durum, ham bir alan değil tender_datetime'dan hesaplanıyor - sıralamanın
+  // da çalışması için accessorFn ile hesaplanan booleanı sıralama değeri
+  // yapıyoruz, gösterimi yine cell'de özelleştiriyoruz.
+  columnHelper.accessor((row) => isUpcoming(row.tender_datetime), {
     id: "status",
     header: "Durum",
     cell: (info) => {
-      const active = isUpcoming(info.row.original.tender_datetime);
+      const active = info.getValue();
       return (
         <div className="flex items-center gap-2">
           <span className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${active ? "bg-[#34D399]" : "bg-[#8B95A7]"}`} />
