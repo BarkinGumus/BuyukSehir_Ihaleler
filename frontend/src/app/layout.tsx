@@ -31,7 +31,10 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${ibmPlexSans.variable} ${ibmPlexMono.variable}`}
     >
-      <body className="font-body-default text-body-default text-on-surface bg-background">
+      <body
+        suppressHydrationWarning
+        className="font-body-default text-body-default text-on-surface bg-background"
+      >
         <Providers>{children}</Providers>
       </body>
     </html>
