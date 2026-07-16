@@ -1,0 +1,244 @@
+@import "tailwindcss";
+
+/*
+ * Tailwind v4: token'lar tailwind.config.ts yerine burada, @theme bloğunda
+ * tanımlanıyor. Renkler için önce ham bir CSS custom property tanımlıyoruz
+ * (--surface gibi), :root ve .dark altında ayrı değerler veriyoruz, sonra
+ * @theme içinde bu değişkene işaret ediyoruz (--color-surface: var(--surface)).
+ * Böylece next-themes'in <html> etiketine eklediği "dark" class'ı otomatik
+ * olarak tüm bg-surface / text-on-surface vb. class'ları günceller.
+ */
+
+:root {
+  --background: #f6f8fb;
+  --on-background: #101828;
+  --surface: #ffffff;
+  --on-surface: #101828;
+  --surface-dim: #e9edf3;
+  --surface-bright: #ffffff;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f6f8fb;
+  --surface-container: #eef1f6;
+  --surface-container-high: #e6eaf1;
+  --surface-container-highest: #dfe4ec;
+  --surface-variant: #eef1f6;
+  --on-surface-variant: #5b6474;
+  --outline: #94a0b3;
+  --outline-variant: #e3e8ef;
+
+  --primary: #1d4ed8;
+  --on-primary: #ffffff;
+  --primary-container: #dbe4fb;
+  --on-primary-container: #1e3a8a;
+  --primary-fixed: #dbe4fb;
+  --primary-fixed-dim: #b6c9f5;
+  --on-primary-fixed: #1e3a8a;
+  --on-primary-fixed-variant: #1d4ed8;
+
+  --secondary: #475569;
+  --on-secondary: #ffffff;
+  --secondary-container: #e2e8f0;
+  --on-secondary-container: #334155;
+  --secondary-fixed: #e2e8f0;
+  --secondary-fixed-dim: #cbd5e1;
+  --on-secondary-fixed: #1e293b;
+  --on-secondary-fixed-variant: #475569;
+
+  --tertiary: #b45309;
+  --on-tertiary: #ffffff;
+  --tertiary-container: #fed7aa;
+  --on-tertiary-container: #7c2d12;
+  --tertiary-fixed: #fed7aa;
+  --tertiary-fixed-dim: #fdba74;
+  --on-tertiary-fixed: #7c2d12;
+  --on-tertiary-fixed-variant: #9a3412;
+
+  --error: #dc2626;
+  --on-error: #ffffff;
+  --error-container: #fee2e2;
+  --on-error-container: #7f1d1d;
+
+  --inverse-surface: #101828;
+  --inverse-on-surface: #f6f8fb;
+  --inverse-primary: #adc6ff;
+  --surface-tint: #1d4ed8;
+}
+
+.dark {
+  --background: #0d1321;
+  --on-background: #dde2f6;
+  --surface: #0d1321;
+  --on-surface: #dde2f6;
+  --surface-dim: #0d1321;
+  --surface-bright: #333948;
+  --surface-container-lowest: #080e1c;
+  --surface-container-low: #151b2a;
+  --surface-container: #191f2e;
+  --surface-container-high: #242a39;
+  --surface-container-highest: #2f3544;
+  --surface-variant: #2f3544;
+  --on-surface-variant: #c2c6d6;
+  --outline: #8c909f;
+  --outline-variant: #424754;
+
+  --primary: #adc6ff;
+  --on-primary: #002e6a;
+  --primary-container: #4d8eff;
+  --on-primary-container: #00285d;
+  --primary-fixed: #d8e2ff;
+  --primary-fixed-dim: #adc6ff;
+  --on-primary-fixed: #001a42;
+  --on-primary-fixed-variant: #004395;
+
+  --secondary: #bdc7da;
+  --on-secondary: #273140;
+  --secondary-container: #3d4757;
+  --on-secondary-container: #acb6c8;
+  --secondary-fixed: #d9e3f7;
+  --secondary-fixed-dim: #bdc7da;
+  --on-secondary-fixed: #121c2a;
+  --on-secondary-fixed-variant: #3d4757;
+
+  --tertiary: #ffb786;
+  --on-tertiary: #502400;
+  --tertiary-container: #df7412;
+  --on-tertiary-container: #461f00;
+  --tertiary-fixed: #ffdcc6;
+  --tertiary-fixed-dim: #ffb786;
+  --on-tertiary-fixed: #311400;
+  --on-tertiary-fixed-variant: #723600;
+
+  --error: #ffb4ab;
+  --on-error: #690005;
+  --error-container: #93000a;
+  --on-error-container: #ffdad6;
+
+  --inverse-surface: #dde2f6;
+  --inverse-on-surface: #2a303f;
+  --inverse-primary: #005ac2;
+  --surface-tint: #adc6ff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-on-background: var(--on-background);
+  --color-surface: var(--surface);
+  --color-on-surface: var(--on-surface);
+  --color-surface-dim: var(--surface-dim);
+  --color-surface-bright: var(--surface-bright);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
+  --color-surface-variant: var(--surface-variant);
+  --color-on-surface-variant: var(--on-surface-variant);
+  --color-outline: var(--outline);
+  --color-outline-variant: var(--outline-variant);
+
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-primary-container: var(--primary-container);
+  --color-on-primary-container: var(--on-primary-container);
+  --color-primary-fixed: var(--primary-fixed);
+  --color-primary-fixed-dim: var(--primary-fixed-dim);
+  --color-on-primary-fixed: var(--on-primary-fixed);
+  --color-on-primary-fixed-variant: var(--on-primary-fixed-variant);
+
+  --color-secondary: var(--secondary);
+  --color-on-secondary: var(--on-secondary);
+  --color-secondary-container: var(--secondary-container);
+  --color-on-secondary-container: var(--on-secondary-container);
+  --color-secondary-fixed: var(--secondary-fixed);
+  --color-secondary-fixed-dim: var(--secondary-fixed-dim);
+  --color-on-secondary-fixed: var(--on-secondary-fixed);
+  --color-on-secondary-fixed-variant: var(--on-secondary-fixed-variant);
+
+  --color-tertiary: var(--tertiary);
+  --color-on-tertiary: var(--on-tertiary);
+  --color-tertiary-container: var(--tertiary-container);
+  --color-on-tertiary-container: var(--on-tertiary-container);
+  --color-tertiary-fixed: var(--tertiary-fixed);
+  --color-tertiary-fixed-dim: var(--tertiary-fixed-dim);
+  --color-on-tertiary-fixed: var(--on-tertiary-fixed);
+  --color-on-tertiary-fixed-variant: var(--on-tertiary-fixed-variant);
+
+  --color-error: var(--error);
+  --color-on-error: var(--on-error);
+  --color-error-container: var(--error-container);
+  --color-on-error-container: var(--on-error-container);
+
+  --color-inverse-surface: var(--inverse-surface);
+  --color-inverse-on-surface: var(--inverse-on-surface);
+  --color-inverse-primary: var(--inverse-primary);
+  --color-surface-tint: var(--surface-tint);
+
+  /* Border radius - "full" burada Tailwind'in olağan "tam yuvarlak" anlamında
+     değil, tasarımın kendi en büyük köşe yarıçapı (12px) anlamında kullanılmış;
+     tasarımı birebir korumak için aynen taşıdık. */
+  --radius: 0.125rem;
+  --radius-lg: 0.25rem;
+  --radius-xl: 0.5rem;
+  --radius-full: 0.75rem;
+
+  /* Spacing - isimli değerler (örn. h-row-height, w-sidebar-width) */
+  --spacing-element-gap: 12px;
+  --spacing-input-height: 32px;
+  --spacing-row-height: 40px;
+  --spacing-sidebar-width: 220px;
+  --spacing-container-padding: 24px;
+
+  /* Fontlar - next/font/google'ın ürettiği CSS değişkenlerine işaret ediyor,
+     bkz. layout.tsx */
+  --font-body-default: var(--font-ibm-plex-sans);
+  --font-caption-mono: var(--font-ibm-plex-mono);
+  --font-body-strong: var(--font-ibm-plex-sans);
+  --font-headline-sm: var(--font-ibm-plex-sans);
+  --font-headline-md: var(--font-ibm-plex-sans);
+  --font-data-mono: var(--font-ibm-plex-mono);
+  --font-label-compact: var(--font-ibm-plex-sans);
+
+  /* Font boyutları - Tailwind v4'te bir text-* utility'sine line-height ve
+     font-weight'i birlikte bağlamak için --text-<isim>--line-height ve
+     --text-<isim>--font-weight companion key'leri kullanılıyor. */
+  --text-body-default: 14px;
+  --text-body-default--line-height: 20px;
+  --text-body-default--font-weight: 400;
+
+  --text-caption-mono: 11px;
+  --text-caption-mono--line-height: 14px;
+  --text-caption-mono--font-weight: 400;
+
+  --text-body-strong: 14px;
+  --text-body-strong--line-height: 20px;
+  --text-body-strong--font-weight: 500;
+
+  --text-headline-sm: 16px;
+  --text-headline-sm--line-height: 24px;
+  --text-headline-sm--font-weight: 600;
+
+  --text-headline-md: 20px;
+  --text-headline-md--line-height: 28px;
+  --text-headline-md--font-weight: 600;
+
+  --text-data-mono: 13px;
+  --text-data-mono--line-height: 18px;
+  --text-data-mono--font-weight: 400;
+
+  --text-label-compact: 12px;
+  --text-label-compact--line-height: 16px;
+  --text-label-compact--font-weight: 500;
+}
+
+body {
+  background: var(--background);
+  color: var(--on-surface);
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
