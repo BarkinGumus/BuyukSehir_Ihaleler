@@ -19,6 +19,35 @@ _TYPE_KEYWORDS = (
 )
 
 
+def turkish_title(text: str) -> str:
+    """Tek kelimelik metinleri (il adı gibi) Türkçe kurallarına göre baş harfi
+    büyük, geri kalanı küçük yapar (örn. 'İSTANBUL'/'istanbul' -> 'İstanbul').
+    str.title()/str.capitalize() burada da aynı İ/I sorununu yaşar."""
+    lowered = turkish_lower(text)
+    if not lowered:
+        return lowered
+    first, rest = lowered[0], lowered[1:]
+    if first == "i":
+        first = "İ"
+    elif first == "ı":
+        first = "I"
+    else:
+        first = first.upper()
+    return first + rest
+
+
+_TURKISH_ALPHABET = "abcçdefgğhıijklmnoöprsştuüvyz"
+_TURKISH_ORDER = {ch: i for i, ch in enumerate(_TURKISH_ALPHABET)}
+
+
+def turkish_sort_key(text: str) -> list[int]:
+    """Python'un varsayılan sıralaması Unicode kod noktasına göre çalışır, bu yüzden
+    Ç/Ğ/İ/Ö/Ş/Ü ile başlayan kelimeler Z'den sonraya düşer (örn. 'Çorum' 'Bursa'dan
+    sonra değil, listenin sonunda çıkar). Bu, harfleri gerçek Türkçe alfabe sırasındaki
+    konumlarına eşleyip (C'den hemen sonra Ç gibi) doğru bir sıralama anahtarı üretir."""
+    return [_TURKISH_ORDER.get(ch, 1000 + ord(ch)) for ch in turkish_lower(text)]
+
+
 def classify_tender_type(text: str) -> TenderType:
     """Serbest metin içinde ihale türüne işaret eden anahtar kelimeleri arar."""
     lowered = turkish_lower(text)

@@ -13,6 +13,7 @@ from scraper.db.models import ScraperRun
 from scraper.db.queries import get_known_tender_dates, touch_last_seen
 from scraper.models import TenderRecord, TenderType
 from scraper.scrapers.base import BaseScraper
+from scraper.text_utils import turkish_title
 
 SOURCE_NAME = "ilan_gov_tr"
 SITE_BASE = "https://www.ilan.gov.tr"
@@ -130,7 +131,6 @@ def _to_tender_record(ad: dict, facets: dict, content_values: dict, content_text
         procedure=facets.get("İhale Usulü"),
         tender_datetime=_parse_facet_datetime(facets.get("İhale ve Teklif Açma Tarihi")),
         unit=content_values.get("1.1. Adı"),
-        status=None,
         description=content_values.get("3.2. Niteliği, türü ve miktarı") or content_text,
         delivery_place=content_values.get("3.3. Yapılacağı/teslim edileceği yer"),
         duration=content_values.get("3.4. Süresi/teslim tarihi"),
@@ -139,7 +139,7 @@ def _to_tender_record(ad: dict, facets: dict, content_values: dict, content_text
         phone=content_values.get("1.3. Telefon numarası"),
         detail_url=f"{SITE_BASE}{ad.get('urlStr', '')}",
         doc_url=None,
-        province=ad.get("addressCityName"),
+        province=turkish_title(ad["addressCityName"]) if ad.get("addressCityName") else None,
         institution=ad.get("advertiserName"),
         raw_data=raw_data,
     )

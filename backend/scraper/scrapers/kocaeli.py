@@ -112,7 +112,6 @@ def _to_tender_record(list_item: dict, detail_values: dict, full_text: str) -> T
         procedure=extract_procedure(full_text),
         tender_datetime=tender_datetime,
         unit=detail_values.get("1.1. Adı"),
-        status=None,
         description=detail_values.get("3.2. Niteliği, türü ve miktarı"),
         delivery_place=detail_values.get("3.3. Yapılacağı/teslim edileceği yer"),
         duration=detail_values.get("3.4. Süresi/teslim tarihi"),

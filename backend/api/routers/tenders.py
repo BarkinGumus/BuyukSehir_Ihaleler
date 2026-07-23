@@ -9,7 +9,7 @@ from api.deps import get_db
 from api.schemas import TenderFilterOptionsOut, TenderListOut, TenderOut, TenderStatsOut
 from scraper.db.models import Tender
 from scraper.models import TenderType
-from scraper.text_utils import turkish_lower
+from scraper.text_utils import turkish_lower, turkish_sort_key
 
 router = APIRouter(prefix="/tenders", tags=["tenders"])
 
@@ -55,7 +55,7 @@ def _dedupe_case_insensitive(values: list[str]) -> list[str]:
         current = by_key.get(key)
         if current is None or (current.isupper() and not value.isupper()):
             by_key[key] = value
-    return sorted(by_key.values())
+    return sorted(by_key.values(), key=turkish_sort_key)
 
 
 @router.get("/filter-options", response_model=TenderFilterOptionsOut)

@@ -12,7 +12,6 @@ _UPDATABLE_COLUMNS = (
     "procedure",
     "tender_datetime",
     "unit",
-    "status",
     "description",
     "delivery_place",
     "duration",

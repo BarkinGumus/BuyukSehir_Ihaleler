@@ -111,7 +111,6 @@ def _to_tender_record(list_item: dict, detail_values: dict, ilan_metni: str) -> 
         procedure=extract_procedure(procedure_source),
         tender_datetime=list_item["tender_datetime"],
         unit=detail_values.get("İhale Birimi") or list_item["unit"],
-        status=None,
         description=detail_values.get("İhale Konusu Hizmetin Niteliği, Türü ve Miktarı")
         or detail_values.get("İhale Kısa Özeti"),
         delivery_place=detail_values.get("Teslim Yeri"),

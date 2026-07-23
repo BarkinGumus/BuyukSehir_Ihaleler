@@ -23,7 +23,6 @@ class TenderRecord(BaseModel):
     procedure: str | None = None
     tender_datetime: datetime | None = None
     unit: str | None = None
-    status: str | None = None
     description: str | None = None
     delivery_place: str | None = None
     duration: str | None = None

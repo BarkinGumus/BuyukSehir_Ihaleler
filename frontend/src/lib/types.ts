@@ -20,7 +20,6 @@ export interface Tender {
   procedure: string | null;
   tender_datetime: string | null; // ISO 8601
   unit: string | null;
-  status: string | null;
   description: string | null;
   delivery_place: string | null;
   duration: string | null;

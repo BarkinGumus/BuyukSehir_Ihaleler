@@ -80,7 +80,6 @@ def _to_tender_record(item: dict) -> TenderRecord:
         procedure=attrs.get("usul"),
         tender_datetime=attrs.get("tarih"),
         unit=_extract_unit(attrs.get("ilanMetni") or ""),
-        status=attrs.get("durum"),
         description=attrs.get("nitelikMiktar"),
         delivery_place=attrs.get("teslimYeri"),
         duration=attrs.get("teslimSuresi"),

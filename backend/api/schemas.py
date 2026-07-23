@@ -17,7 +17,6 @@ class TenderOut(BaseModel):
     procedure: str | None
     tender_datetime: datetime | None
     unit: str | None
-    status: str | None
     description: str | None
     delivery_place: str | None
     duration: str | None

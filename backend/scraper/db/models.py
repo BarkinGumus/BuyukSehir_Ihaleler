@@ -23,7 +23,6 @@ class Tender(Base):
     procedure: Mapped[str | None] = mapped_column(Text)
     tender_datetime: Mapped[datetime | None] = mapped_column(DateTime)
     unit: Mapped[str | None] = mapped_column(Text)
-    status: Mapped[str | None] = mapped_column(Text)
     description: Mapped[str | None] = mapped_column(Text)
     delivery_place: Mapped[str | None] = mapped_column(Text)
     duration: Mapped[str | None] = mapped_column(Text)
