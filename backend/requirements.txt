@@ -7,3 +7,4 @@ psycopg[binary]
 certifi
 fastapi
 uvicorn[standard]
+pyjwt[crypto]

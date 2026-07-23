@@ -32,6 +32,27 @@ class TenderOut(BaseModel):
     last_seen_at: datetime
 
 
+class TenderUpdate(BaseModel):
+    """Admin düzenleme formunun gönderdiği alanlar - hepsi opsiyonel, sadece
+    değiştirilen alanlar gönderilse de çalışır (exclude_unset ile)."""
+
+    title: str | None = None
+    tender_type: TenderType | None = None
+    procedure: str | None = None
+    tender_datetime: datetime | None = None
+    unit: str | None = None
+    description: str | None = None
+    delivery_place: str | None = None
+    duration: str | None = None
+    venue: str | None = None
+    address: str | None = None
+    phone: str | None = None
+    detail_url: str | None = None
+    doc_url: str | None = None
+    province: str | None = None
+    institution: str | None = None
+
+
 class TenderListOut(BaseModel):
     items: list[TenderOut]
     total: int

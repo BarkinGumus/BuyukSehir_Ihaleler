@@ -6,10 +6,11 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
 interface TopBarProps {
-  lastUpdated: string;
+  title?: string;
+  lastUpdated?: string;
 }
 
-export function TopBar({ lastUpdated }: TopBarProps) {
+export function TopBar({ title = "İhaleler", lastUpdated }: TopBarProps) {
   const { resolvedTheme, setTheme } = useTheme();
   const queryClient = useQueryClient();
 
@@ -28,22 +29,26 @@ export function TopBar({ lastUpdated }: TopBarProps) {
           <Menu size={20} />
         </button>
         <h2 className="font-headline-md text-headline-md font-semibold text-on-surface">
-          İhaleler
+          {title}
         </h2>
       </div>
       <div className="flex items-center gap-4">
-        <span className="font-caption-mono text-caption-mono text-on-surface-variant">
-          son güncelleme {lastUpdated}
-        </span>
+        {lastUpdated && (
+          <span className="font-caption-mono text-caption-mono text-on-surface-variant">
+            son güncelleme {lastUpdated}
+          </span>
+        )}
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            aria-label="Yenile"
-            onClick={() => queryClient.invalidateQueries({ queryKey: ["tenders"] })}
-            className="rounded p-1 text-on-surface opacity-80 transition-colors hover:bg-surface-variant"
-          >
-            <RefreshCw size={18} />
-          </button>
+          {lastUpdated && (
+            <button
+              type="button"
+              aria-label="Yenile"
+              onClick={() => queryClient.invalidateQueries({ queryKey: ["tenders"] })}
+              className="rounded p-1 text-on-surface opacity-80 transition-colors hover:bg-surface-variant"
+            >
+              <RefreshCw size={18} />
+            </button>
+          )}
           <button
             type="button"
             aria-label="Tema değiştir"

@@ -1,3 +1,4 @@
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
@@ -26,17 +27,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="tr"
-      suppressHydrationWarning
-      className={`${ibmPlexSans.variable} ${ibmPlexMono.variable}`}
-    >
-      <body
+    <ClerkProvider afterSignOutUrl="/">
+
+      <html
+        lang="tr"
         suppressHydrationWarning
-        className="font-body-default text-body-default text-on-surface bg-background"
+        className={`${ibmPlexSans.variable} ${ibmPlexMono.variable}`}
       >
-        <Providers>{children}</Providers>
-      </body>
-    </html>
+        <body
+          suppressHydrationWarning
+          className="font-body-default text-body-default text-on-surface bg-background"
+        >
+          <Providers>{children}</Providers>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

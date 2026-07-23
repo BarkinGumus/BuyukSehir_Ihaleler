@@ -5,8 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import case, distinct, func
 from sqlalchemy.orm import Session
 
+from api.auth import require_admin
 from api.deps import get_db
-from api.schemas import TenderFilterOptionsOut, TenderListOut, TenderOut, TenderStatsOut
+from api.schemas import TenderFilterOptionsOut, TenderListOut, TenderOut, TenderStatsOut, TenderUpdate
 from scraper.db.models import Tender
 from scraper.models import TenderType
 from scraper.text_utils import turkish_lower, turkish_sort_key
@@ -135,3 +136,29 @@ def get_tender(tender_id: int, db: Session = Depends(get_db)) -> Tender:
     if not tender:
         raise HTTPException(status_code=404, detail="İhale bulunamadı")
     return tender
+
+
+@router.put("/{tender_id}", response_model=TenderOut, dependencies=[Depends(require_admin)])
+def update_tender(tender_id: int, update: TenderUpdate, db: Session = Depends(get_db)) -> Tender:
+    tender = db.get(Tender, tender_id)
+    if not tender:
+        raise HTTPException(status_code=404, detail="İhale bulunamadı")
+
+    changes = update.model_dump(exclude_unset=True)
+    if "tender_type" in changes and changes["tender_type"] is not None:
+        changes["tender_type"] = changes["tender_type"].value
+    for field, value in changes.items():
+        setattr(tender, field, value)
+
+    db.commit()
+    db.refresh(tender)
+    return tender
+
+
+@router.delete("/{tender_id}", status_code=204, dependencies=[Depends(require_admin)])
+def delete_tender(tender_id: int, db: Session = Depends(get_db)) -> None:
+    tender = db.get(Tender, tender_id)
+    if not tender:
+        raise HTTPException(status_code=404, detail="İhale bulunamadı")
+    db.delete(tender)
+    db.commit()

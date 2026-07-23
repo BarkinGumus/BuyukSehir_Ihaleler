@@ -36,6 +36,30 @@ async function fetchJSON<T>(path: string, params: Record<string, string | number
   return res.json() as Promise<T>;
 }
 
+// Admin işlemleri Clerk oturum token'ı gerektiriyor - token, çağıran component'te
+// useAuth().getToken() ile alınıp buraya parametre olarak geçiriliyor (bu dosya
+// Clerk hook'larını doğrudan çağıramaz, hook değil).
+async function authedRequest<T>(
+  path: string,
+  token: string,
+  init: RequestInit = {},
+): Promise<T> {
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...(init.body ? { "Content-Type": "application/json" } : {}),
+      ...init.headers,
+    },
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.detail ?? `İstek başarısız: ${path} (${res.status})`);
+  }
+  if (res.status === 204) return undefined as T;
+  return res.json() as Promise<T>;
+}
+
 export async function getTenders(filters: TenderFilters = {}): Promise<TenderListResponse> {
   return fetchJSON<TenderListResponse>("/tenders", {
     city: filters.city,
@@ -91,4 +115,52 @@ export interface TenderFilterOptions {
 
 export async function getTenderFilterOptions(): Promise<TenderFilterOptions> {
   return fetchJSON<TenderFilterOptions>("/tenders/filter-options");
+}
+
+export interface TenderUpdatePayload {
+  title?: string;
+  tender_type?: TenderType;
+  procedure?: string | null;
+  tender_datetime?: string | null;
+  unit?: string | null;
+  description?: string | null;
+  delivery_place?: string | null;
+  duration?: string | null;
+  venue?: string | null;
+  address?: string | null;
+  phone?: string | null;
+  detail_url?: string;
+  doc_url?: string | null;
+  province?: string | null;
+  institution?: string | null;
+}
+
+export async function updateTender(id: number, data: TenderUpdatePayload, token: string): Promise<Tender> {
+  return authedRequest<Tender>(`/tenders/${id}`, token, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteTender(id: number, token: string): Promise<void> {
+  await authedRequest<void>(`/tenders/${id}`, token, { method: "DELETE" });
+}
+
+export type ScraperSource = "istanbul" | "ankara" | "kocaeli" | "ilan_gov_tr";
+
+export interface ScraperJobState {
+  status: "idle" | "running" | "done" | "error";
+  result: { new_count: number; updated_count: number; skipped: number; total_fetched: number } | null;
+  error: string | null;
+  finished_at: string | null;
+}
+
+export type ScraperStatusResponse = Record<ScraperSource, ScraperJobState>;
+
+export async function getScraperStatus(token: string): Promise<ScraperStatusResponse> {
+  return authedRequest<ScraperStatusResponse>("/admin/scrapers/status", token);
+}
+
+export async function triggerScraper(source: ScraperSource | "all", token: string): Promise<{ started: string[] }> {
+  return authedRequest<{ started: string[] }>(`/admin/scrapers/${source}/run`, token, { method: "POST" });
 }

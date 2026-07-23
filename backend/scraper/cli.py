@@ -11,38 +11,54 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 logger = logging.getLogger(__name__)
 
 
+def run_one(scraper: BaseScraper) -> dict:
+    """Tek bir scraper'ı çalıştırıp DB'ye yazar, sonuç özetini döner.
+
+    Hem `run()` (CLI) hem de admin panelinin arka planda tetiklediği
+    scraper istekleri bunu kullanıyor - mantık tek bir yerde."""
+    session = SessionLocal()
+    try:
+        fetched = scraper.fetch()
+        records = [
+            r for r in fetched if r.tender_datetime and r.tender_datetime.date() >= MIN_TENDER_DATE
+        ]
+        skipped = len(fetched) - len(records)
+
+        new_count = 0
+        updated_count = 0
+        for record in records:
+            if upsert_tender(session, record):
+                new_count += 1
+            else:
+                updated_count += 1
+        session.commit()
+    finally:
+        session.close()
+
+    result = {
+        "source": scraper.source_name,
+        "new_count": new_count,
+        "updated_count": updated_count,
+        "skipped": skipped,
+        "total_fetched": len(fetched),
+    }
+    logger.info(
+        "%s: %d yeni, %d güncellenen, %d elendi (%s öncesi/tarihsiz) - toplam %d çekildi",
+        scraper.source_name,
+        new_count,
+        updated_count,
+        skipped,
+        MIN_TENDER_DATE.isoformat(),
+        len(fetched),
+    )
+    return result
+
+
 def run(scrapers: list[BaseScraper] | None = None) -> None:
     scrapers = scrapers if scrapers is not None else SCRAPERS
     create_tables()
-    session = SessionLocal()
-    try:
-        for scraper in scrapers:
-            fetched = scraper.fetch()
-            records = [
-                r for r in fetched if r.tender_datetime and r.tender_datetime.date() >= MIN_TENDER_DATE
-            ]
-            skipped = len(fetched) - len(records)
-
-            new_count = 0
-            updated_count = 0
-            for record in records:
-                if upsert_tender(session, record):
-                    new_count += 1
-                else:
-                    updated_count += 1
-            session.commit()
-
-            logger.info(
-                "%s: %d yeni, %d güncellenen, %d elendi (%s öncesi/tarihsiz) - toplam %d çekildi",
-                scraper.source_name,
-                new_count,
-                updated_count,
-                skipped,
-                MIN_TENDER_DATE.isoformat(),
-                len(fetched),
-            )
-    finally:
-        session.close()
+    for scraper in scrapers:
+        run_one(scraper)
 
 
 def main() -> None:

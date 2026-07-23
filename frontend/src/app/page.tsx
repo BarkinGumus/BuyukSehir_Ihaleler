@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { ActiveFilterTags } from "@/components/ActiveFilterTags";
 import { FilterBar } from "@/components/FilterBar";
 import { SearchBar } from "@/components/SearchBar";
@@ -17,6 +17,14 @@ import { getTenders, getTenderStats } from "@/lib/api";
 const PAGE_SIZE = 50;
 
 export default function Home() {
+  return (
+    <Suspense fallback={null}>
+      <HomeContent />
+    </Suspense>
+  );
+}
+
+function HomeContent() {
   const { filters } = useTenderFilters();
   const { selectTender } = useSelectedTender();
   const [page, setPage] = useState(1);

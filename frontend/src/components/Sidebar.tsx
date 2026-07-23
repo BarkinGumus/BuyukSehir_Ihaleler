@@ -1,10 +1,22 @@
-import { BookOpen, CalendarDays, Gavel, LayoutDashboard, Settings } from "lucide-react";
+"use client";
+
+import { Show, UserButton, useUser } from "@clerk/nextjs";
+import { BookOpen, CalendarDays, Gavel, LayoutDashboard, Settings, ShieldCheck } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const inactiveLinkClass =
   "flex h-8 cursor-not-allowed items-center gap-3 pl-4 text-on-surface-variant/60";
+const activeLinkClass =
+  "flex h-8 items-center gap-3 border-l-2 border-primary bg-surface-variant/30 pl-3 font-body-strong text-body-strong text-primary";
+const linkClass =
+  "flex h-8 items-center gap-3 pl-4 font-body-default text-body-default text-on-surface-variant hover:text-on-surface";
 
 export function Sidebar() {
+  const { user } = useUser();
+  const pathname = usePathname();
+  const isAdmin = user?.publicMetadata?.role === "admin";
+
   return (
     <nav className="fixed left-0 top-0 z-10 hidden h-full w-sidebar-width flex-col border-r border-outline-variant/14 bg-surface py-container-padding md:flex">
       <div className="mb-8 px-4">
@@ -24,10 +36,7 @@ export function Sidebar() {
           </span>
         </li>
         <li>
-          <Link
-            href="/"
-            className="flex h-8 items-center gap-3 border-l-2 border-primary bg-surface-variant/30 pl-3 font-body-strong text-body-strong text-primary"
-          >
+          <Link href="/" className={pathname === "/" ? activeLinkClass : linkClass}>
             <Gavel size={16} />
             <span>İhaleler</span>
           </Link>
@@ -44,6 +53,14 @@ export function Sidebar() {
             <span className="font-body-default text-body-default">Kaynaklar</span>
           </span>
         </li>
+        {isAdmin && (
+          <li>
+            <Link href="/admin" className={pathname === "/admin" ? activeLinkClass : linkClass}>
+              <ShieldCheck size={16} />
+              <span>Admin</span>
+            </Link>
+          </li>
+        )}
         <li>
           <span className={`mt-4 ${inactiveLinkClass}`}>
             <Settings size={16} />
@@ -51,6 +68,14 @@ export function Sidebar() {
           </span>
         </li>
       </ul>
+      <Show when="signed-in">
+        <div className="mt-auto flex items-center gap-3 border-t border-outline-variant/14 px-4 pt-4">
+          <UserButton />
+          <span className="font-caption-mono text-caption-mono text-on-surface-variant">
+            {user?.primaryEmailAddress?.emailAddress}
+          </span>
+        </div>
+      </Show>
     </nav>
   );
 }
