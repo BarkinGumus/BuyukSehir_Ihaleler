@@ -1,7 +1,15 @@
 "use client";
 
-import { Show, UserButton, useUser } from "@clerk/nextjs";
-import { BookOpen, CalendarDays, Gavel, LayoutDashboard, Settings, ShieldCheck } from "lucide-react";
+import { Show, SignOutButton, UserButton, useUser } from "@clerk/nextjs";
+import {
+  BookOpen,
+  CalendarDays,
+  Gavel,
+  LayoutDashboard,
+  LogOut,
+  Settings,
+  ShieldCheck,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -28,12 +36,11 @@ export function Sidebar() {
         </span>
       </div>
       <ul className="flex w-full flex-col gap-1">
-        {/* Henüz sayfası olmayan gezinme öğeleri - şimdilik pasif (tıklanamaz) */}
         <li>
-          <span className={inactiveLinkClass}>
+          <Link href="/dashboard" className={pathname === "/dashboard" ? activeLinkClass : linkClass}>
             <LayoutDashboard size={16} />
-            <span className="font-body-default text-body-default">Dashboard</span>
-          </span>
+            <span>Dashboard</span>
+          </Link>
         </li>
         <li>
           <Link href="/" className={pathname === "/" ? activeLinkClass : linkClass}>
@@ -41,6 +48,7 @@ export function Sidebar() {
             <span>İhaleler</span>
           </Link>
         </li>
+        {/* Henüz sayfası olmayan gezinme öğeleri - şimdilik pasif (tıklanamaz) */}
         <li>
           <span className={inactiveLinkClass}>
             <CalendarDays size={16} />
@@ -69,11 +77,22 @@ export function Sidebar() {
         </li>
       </ul>
       <Show when="signed-in">
-        <div className="mt-auto flex items-center gap-3 border-t border-outline-variant/14 px-4 pt-4">
-          <UserButton />
-          <span className="font-caption-mono text-caption-mono text-on-surface-variant">
-            {user?.primaryEmailAddress?.emailAddress}
-          </span>
+        <div className="mt-auto flex flex-col gap-3 border-t border-outline-variant/14 px-4 pt-4">
+          <div className="flex items-center gap-3">
+            <UserButton />
+            <span className="truncate font-caption-mono text-caption-mono text-on-surface-variant">
+              {user?.primaryEmailAddress?.emailAddress}
+            </span>
+          </div>
+          <SignOutButton redirectUrl="/sign-in">
+            <button
+              type="button"
+              className="flex h-8 items-center gap-3 text-body-default text-on-surface-variant hover:text-red-400"
+            >
+              <LogOut size={16} />
+              <span>Çıkış Yap</span>
+            </button>
+          </SignOutButton>
         </div>
       </Show>
     </nav>
