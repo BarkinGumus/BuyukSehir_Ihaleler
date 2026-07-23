@@ -8,3 +8,4 @@ certifi
 fastapi
 uvicorn[standard]
 pyjwt[crypto]
+typing_extensions
