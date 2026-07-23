@@ -1,40 +1,63 @@
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
+import { Suspense } from "react";
+import { ActiveFilterTags } from "@/components/ActiveFilterTags";
+import { ContentSection } from "@/components/analytics/ContentSection";
+import { GeographySection } from "@/components/analytics/GeographySection";
+import { InstitutionsSection } from "@/components/analytics/InstitutionsSection";
+import { KpiCards } from "@/components/analytics/KpiCards";
+import { TrendsSection } from "@/components/analytics/TrendsSection";
+import { FilterBar } from "@/components/FilterBar";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
+import { useTenderFilters } from "@/hooks/useTenderFilters";
+import { getKpis, type AnalyticsFilters } from "@/lib/api";
 
-// TODO: Bu bileşen sadece yer tutucu (placeholder) - gerçek grafikler
-// eklenince kaldırılacak.
-function PlaceholderChartCard({ title }: { title: string }) {
-  const bars = [40, 65, 30, 80, 55, 70, 45];
+export default function DashboardPage() {
   return (
-    <div className="flex flex-col gap-4 rounded border border-outline-variant/14 bg-surface p-4">
-      <span className="font-body-strong text-body-strong text-on-surface">{title}</span>
-      <div className="flex h-40 items-end gap-2">
-        {bars.map((height, i) => (
-          <div
-            key={i}
-            className="flex-1 rounded-t bg-primary/40"
-            style={{ height: `${height}%` }}
-          />
-        ))}
-      </div>
-      <span className="font-caption-mono text-caption-mono text-on-surface-variant">
-        Örnek veri - gerçek grafik burada olacak
-      </span>
-    </div>
+    <Suspense fallback={null}>
+      <DashboardContent />
+    </Suspense>
   );
 }
 
-export default function DashboardPage() {
+function DashboardContent() {
+  const { filters: rawFilters } = useTenderFilters();
+
+  const filters: AnalyticsFilters = {
+    city: rawFilters.city || undefined,
+    source: rawFilters.source || undefined,
+    type: rawFilters.type || undefined,
+    procedure: rawFilters.procedure || undefined,
+    institution: rawFilters.institution || undefined,
+    unit: rawFilters.unit || undefined,
+    dateFrom: rawFilters.dateFrom || undefined,
+    dateTo: rawFilters.dateTo || undefined,
+  };
+
+  const { data: kpis, isLoading: kpisLoading } = useQuery({
+    queryKey: ["analytics-kpis", filters],
+    queryFn: () => getKpis(filters),
+  });
+
   return (
     <div className="flex h-screen w-full bg-surface">
       <Sidebar />
       <main className="flex h-full w-full flex-col md:ml-sidebar-width">
         <TopBar title="Dashboard" />
-        <div className="hide-scrollbar flex flex-1 flex-col gap-6 overflow-y-auto overflow-x-hidden p-container-padding">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <PlaceholderChartCard title="Kaynağa göre ihale sayısı" />
-            <PlaceholderChartCard title="Aylara göre ihale sayısı" />
+        <div className="hide-scrollbar flex flex-1 flex-col gap-8 overflow-y-auto overflow-x-hidden p-container-padding">
+          <div className="flex w-full flex-col gap-element-gap">
+            <FilterBar showInstitutionUnit />
+            <ActiveFilterTags resultCount={kpis?.total ?? 0} />
           </div>
+
+          <KpiCards data={kpis} isLoading={kpisLoading} />
+
+          <TrendsSection filters={filters} />
+          <GeographySection filters={filters} />
+          <InstitutionsSection filters={filters} />
+          <ContentSection filters={filters} />
         </div>
       </main>
     </div>

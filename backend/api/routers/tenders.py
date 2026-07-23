@@ -73,8 +73,26 @@ def get_filter_options(db: Session = Depends(get_db)) -> TenderFilterOptionsOut:
         .all()
     ]
     sources = [row[0] for row in db.query(distinct(Tender.source)).order_by(Tender.source).all()]
+    institutions = [
+        row[0]
+        for row in db.query(distinct(Tender.institution))
+        .filter(Tender.institution.isnot(None))
+        .order_by(Tender.institution)
+        .all()
+    ]
+    units = [
+        row[0]
+        for row in db.query(distinct(Tender.unit))
+        .filter(Tender.unit.isnot(None))
+        .order_by(Tender.unit)
+        .all()
+    ]
     return TenderFilterOptionsOut(
-        cities=_dedupe_case_insensitive(raw_cities), procedures=procedures, sources=sources
+        cities=_dedupe_case_insensitive(raw_cities),
+        procedures=procedures,
+        sources=sources,
+        institutions=institutions,
+        units=units,
     )
 
 

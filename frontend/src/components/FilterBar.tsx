@@ -1,7 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useTenderFilters } from "@/hooks/useTenderFilters";
+import { useEffect, useState } from "react";
+import { useTenderFilters, type TenderFilterState } from "@/hooks/useTenderFilters";
 import { getTenderFilterOptions } from "@/lib/api";
 import { sourceLabel, TENDER_TYPE_LABELS, type TenderType } from "@/lib/types";
 
@@ -11,7 +12,62 @@ const selectClass =
 const dateFieldClass =
   "h-input-height rounded border border-outline-variant/14 bg-surface px-2 text-body-default text-on-surface focus:border-primary focus:ring-0";
 
-export function FilterBar() {
+interface DebouncedTextFilterProps {
+  filterKey: keyof TenderFilterState;
+  placeholder: string;
+  listId: string;
+  options: string[];
+}
+
+// Kurum/birim 1000+ farklı değer içerebiliyor - düz <select> kullanışsız
+// olurdu, bu yüzden <datalist> destekli serbest metin alanı (arama-gibi
+// yazdıkça filtreleyen) kullanılıyor. SearchBar'daki 300ms debounce deseninin
+// aynısı - her tuş vuruşunda URL'i (ve dolayısıyla tüm grafikleri) güncellemek
+// yerine yazma bitince tek seferde uyguluyor.
+function DebouncedTextFilter({ filterKey, placeholder, listId, options }: DebouncedTextFilterProps) {
+  const { filters, setFilter } = useTenderFilters();
+  const [value, setValue] = useState(filters[filterKey]);
+
+  const [prevValue, setPrevValue] = useState(filters[filterKey]);
+  if (filters[filterKey] !== prevValue) {
+    setPrevValue(filters[filterKey]);
+    setValue(filters[filterKey]);
+  }
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (value !== filters[filterKey]) setFilter(filterKey, value);
+    }, 300);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  return (
+    <>
+      <input
+        type="text"
+        list={listId}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder={placeholder}
+        className={`${selectClass} px-3`}
+      />
+      <datalist id={listId}>
+        {options.map((option) => (
+          <option key={option} value={option} />
+        ))}
+      </datalist>
+    </>
+  );
+}
+
+interface FilterBarProps {
+  // Kurum/birim filtreleri sadece analiz panelinde (/dashboard) gösteriliyor -
+  // ihale listesi/admin sayfası bu bileşeni değişmeden aynen kullanmaya devam ediyor.
+  showInstitutionUnit?: boolean;
+}
+
+export function FilterBar({ showInstitutionUnit = false }: FilterBarProps) {
   const { filters, setFilter } = useTenderFilters();
   const { data: options } = useQuery({
     queryKey: ["tender-filter-options"],
@@ -72,6 +128,23 @@ export function FilterBar() {
         ))}
       </select>
 
+      {showInstitutionUnit && (
+        <>
+          <DebouncedTextFilter
+            filterKey="institution"
+            placeholder="Kurum ara..."
+            listId="institution-options"
+            options={options?.institutions ?? []}
+          />
+          <DebouncedTextFilter
+            filterKey="unit"
+            placeholder="Birim ara..."
+            listId="unit-options"
+            options={options?.units ?? []}
+          />
+        </>
+      )}
+
       <label className="flex flex-col gap-1">
         <span className="font-label-compact text-label-compact text-on-surface-variant">
           Başlangıç Tarihi
@@ -98,15 +171,17 @@ export function FilterBar() {
         />
       </label>
 
-      <select
-        className={selectClass}
-        value={filters.status}
-        onChange={(e) => setFilter("status", e.target.value)}
-      >
-        <option value="">Durum</option>
-        <option value="aktif">Aktif</option>
-        <option value="gecmis">Geçmiş</option>
-      </select>
+      {!showInstitutionUnit && (
+        <select
+          className={selectClass}
+          value={filters.status}
+          onChange={(e) => setFilter("status", e.target.value)}
+        >
+          <option value="">Durum</option>
+          <option value="aktif">Aktif</option>
+          <option value="gecmis">Geçmiş</option>
+        </select>
+      )}
     </div>
   );
 }

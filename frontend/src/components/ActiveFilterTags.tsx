@@ -22,6 +22,8 @@ function buildTags(filters: TenderFilterState): Tag[] {
   if (filters.procedure) tags.push({ key: "procedure", label: filters.procedure });
   if (filters.status) tags.push({ key: "status", label: STATUS_LABELS[filters.status] });
   if (filters.search) tags.push({ key: "search", label: `"${filters.search}"` });
+  if (filters.institution) tags.push({ key: "institution", label: filters.institution });
+  if (filters.unit) tags.push({ key: "unit", label: filters.unit });
   if (filters.dateFrom) tags.push({ key: "dateFrom", label: `Başlangıç: ${filters.dateFrom}` });
   if (filters.dateTo) tags.push({ key: "dateTo", label: `Bitiş: ${filters.dateTo}` });
   return tags;

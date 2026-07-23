@@ -21,7 +21,7 @@ class Tender(Base):
     title: Mapped[str] = mapped_column(Text)
     tender_type: Mapped[str] = mapped_column(String(30))
     procedure: Mapped[str | None] = mapped_column(Text)
-    tender_datetime: Mapped[datetime | None] = mapped_column(DateTime)
+    tender_datetime: Mapped[datetime | None] = mapped_column(DateTime, index=True)
     unit: Mapped[str | None] = mapped_column(Text)
     description: Mapped[str | None] = mapped_column(Text)
     delivery_place: Mapped[str | None] = mapped_column(Text)
@@ -31,11 +31,13 @@ class Tender(Base):
     phone: Mapped[str | None] = mapped_column(Text)
     detail_url: Mapped[str] = mapped_column(Text)
     doc_url: Mapped[str | None] = mapped_column(Text)
-    province: Mapped[str | None] = mapped_column(Text)
-    institution: Mapped[str | None] = mapped_column(Text)
+    province: Mapped[str | None] = mapped_column(Text, index=True)
+    institution: Mapped[str | None] = mapped_column(Text, index=True)
     raw_data: Mapped[dict] = mapped_column(JSONB, default=dict)
 
-    first_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    first_seen_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), index=True
+    )
     last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 

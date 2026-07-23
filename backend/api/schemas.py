@@ -71,3 +71,69 @@ class TenderFilterOptionsOut(BaseModel):
     cities: list[str]
     procedures: list[str]
     sources: list[str]
+    institutions: list[str] = []
+    units: list[str] = []
+
+
+class KpiOut(BaseModel):
+    total: int
+    today_added: int
+    active: int
+    ending_today: int
+    institution_count: int
+    this_month_total: int
+    last_month_total: int
+    month_over_month_pct: float | None
+
+
+class CountBucket(BaseModel):
+    label: str
+    count: int
+
+
+class TrendsOut(BaseModel):
+    granularity: str
+    series: list[CountBucket]
+    by_weekday: list[CountBucket]
+    by_month_of_year: list[CountBucket]
+    avg_publish_lead_days: float | None
+
+
+class ProvinceTypeBucket(BaseModel):
+    province: str
+    tender_type: TenderType
+    count: int
+
+
+class GeographyOut(BaseModel):
+    by_province: list[CountBucket]
+    by_province_and_type: list[ProvinceTypeBucket]
+
+
+class InstitutionUnitBucket(BaseModel):
+    institution: str
+    unit: str | None
+    count: int
+
+
+class InstitutionMonthlyBucket(BaseModel):
+    institution: str
+    month: str
+    count: int
+
+
+class InstitutionsOut(BaseModel):
+    top_institutions: list[CountBucket]
+    top_institution_units: list[InstitutionUnitBucket]
+    institution_monthly: list[InstitutionMonthlyBucket]
+
+
+class KeywordBucket(BaseModel):
+    word: str
+    count: int
+
+
+class ContentOut(BaseModel):
+    by_tender_type: list[CountBucket]
+    by_procedure: list[CountBucket]
+    top_keywords: list[KeywordBucket]

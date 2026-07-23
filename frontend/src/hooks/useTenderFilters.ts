@@ -14,6 +14,8 @@ export interface TenderFilterState {
   search: string;
   dateFrom: string;
   dateTo: string;
+  institution: string;
+  unit: string;
 }
 
 const EMPTY_FILTERS: TenderFilterState = {
@@ -25,6 +27,8 @@ const EMPTY_FILTERS: TenderFilterState = {
   search: "",
   dateFrom: "",
   dateTo: "",
+  institution: "",
+  unit: "",
 };
 
 // URL query param anahtarları component alan adlarından farklı (kısa/İngilizce
@@ -38,6 +42,8 @@ const PARAM_KEYS: Record<keyof TenderFilterState, string> = {
   search: "q",
   dateFrom: "date_from",
   dateTo: "date_to",
+  institution: "kurum",
+  unit: "birim",
 };
 
 // Filtre state'i URL query params'ta tutulur - bu sayede bir filtre
@@ -57,6 +63,8 @@ export function useTenderFilters() {
       search: searchParams.get(PARAM_KEYS.search) ?? "",
       dateFrom: searchParams.get(PARAM_KEYS.dateFrom) ?? "",
       dateTo: searchParams.get(PARAM_KEYS.dateTo) ?? "",
+      institution: searchParams.get(PARAM_KEYS.institution) ?? "",
+      unit: searchParams.get(PARAM_KEYS.unit) ?? "",
     }),
     [searchParams],
   );
