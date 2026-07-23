@@ -2,7 +2,7 @@ from datetime import date, datetime, timedelta, timezone
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import distinct, func
+from sqlalchemy import case, distinct, func
 from sqlalchemy.orm import Session
 
 from api.deps import get_db
@@ -116,8 +116,11 @@ def list_tenders(
         query = query.filter(Tender.title.ilike(f"%{search}%"))
 
     total = query.count()
+    # Önce aktif (yaklaşan) ihaleler, sonra geçmiş ihaleler gelsin - her iki
+    # grubun kendi içi de tarihe göre artan sırada (aktifte en yakın tarihli üstte).
+    is_past = case((Tender.tender_datetime < datetime.now(), 1), else_=0)
     items = (
-        query.order_by(Tender.tender_datetime.asc())
+        query.order_by(is_past, Tender.tender_datetime.asc())
         .offset((page - 1) * page_size)
         .limit(page_size)
         .all()
