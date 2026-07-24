@@ -18,6 +18,7 @@ import { getContent, type AnalyticsFilters } from "@/lib/api";
 import { TENDER_TYPE_LABELS, type TenderType } from "@/lib/types";
 import { ChartCard } from "./ChartCard";
 import { AXIS_COLOR, CHART_COLORS, GRID_COLOR, TOOLTIP_STYLE } from "./chartTheme";
+import { TruncatedTick } from "./TruncatedTick";
 
 export function ContentSection({ filters }: { filters: AnalyticsFilters }) {
   const { data, isLoading, isError } = useQuery({
@@ -71,16 +72,17 @@ export function ContentSection({ filters }: { filters: AnalyticsFilters }) {
           isError={isError}
           isEmpty={!data || data.byProcedure.length === 0}
         >
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={data?.byProcedure} layout="vertical" margin={{ left: 16 }}>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={data?.byProcedure} layout="vertical" margin={{ left: 8 }}>
               <CartesianGrid stroke={GRID_COLOR} strokeDasharray="3 3" />
               <XAxis type="number" stroke={AXIS_COLOR} tick={{ fontSize: 11 }} allowDecimals={false} />
               <YAxis
                 type="category"
                 dataKey="label"
                 stroke={AXIS_COLOR}
-                tick={{ fontSize: 9 }}
-                width={160}
+                tick={<TruncatedTick maxLength={24} />}
+                width={170}
+                interval={0}
               />
               <Tooltip contentStyle={TOOLTIP_STYLE} />
               <Bar dataKey="count" name="İhale sayısı" fill={CHART_COLORS[1]} radius={[0, 3, 3, 0]} />

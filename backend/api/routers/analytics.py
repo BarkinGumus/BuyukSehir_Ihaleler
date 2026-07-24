@@ -191,9 +191,12 @@ def get_trends(
         6: "Cumartesi",
         7: "Pazar",
     }
-    by_weekday = [
-        CountBucket(label=weekday_names[int(r.weekday)], count=r.count) for r in weekday_rows
-    ]
+    # GROUP BY sadece verisi olan günleri döner - grafikte "eksik" değil "0"
+    # olarak görünsün diye 7 günün hepsi sıfırla başlatılıp üzerine yazılıyor.
+    weekday_counts = {i: 0 for i in range(1, 8)}
+    for r in weekday_rows:
+        weekday_counts[int(r.weekday)] = r.count
+    by_weekday = [CountBucket(label=weekday_names[i], count=weekday_counts[i]) for i in range(1, 8)]
 
     month_of_year = func.extract("month", Tender.first_seen_at).label("month_of_year")
     month_rows = (
@@ -216,8 +219,11 @@ def get_trends(
         11: "Kasım",
         12: "Aralık",
     }
+    month_counts = {i: 0 for i in range(1, 13)}
+    for r in month_rows:
+        month_counts[int(r.month_of_year)] = r.count
     by_month_of_year = [
-        CountBucket(label=month_names[int(r.month_of_year)], count=r.count) for r in month_rows
+        CountBucket(label=month_names[i], count=month_counts[i]) for i in range(1, 13)
     ]
 
     # "Yayın süresi" = ihale tarihine kadar bizim ne kadar önceden fark ettiğimiz

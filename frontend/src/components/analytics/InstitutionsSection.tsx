@@ -16,6 +16,7 @@ import {
 import { getInstitutions, type AnalyticsFilters } from "@/lib/api";
 import { ChartCard } from "./ChartCard";
 import { AXIS_COLOR, CHART_COLORS, GRID_COLOR, TOOLTIP_STYLE } from "./chartTheme";
+import { TruncatedTick } from "./TruncatedTick";
 
 function pivotByMonth(
   rows: { institution: string; month: string; count: number }[],
@@ -52,16 +53,17 @@ export function InstitutionsSection({ filters }: { filters: AnalyticsFilters }) 
           isError={isError}
           isEmpty={topInstitutions.length === 0}
         >
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={topInstitutions} layout="vertical" margin={{ left: 16 }}>
+          <ResponsiveContainer width="100%" height={320}>
+            <BarChart data={topInstitutions} layout="vertical" margin={{ left: 8 }}>
               <CartesianGrid stroke={GRID_COLOR} strokeDasharray="3 3" />
               <XAxis type="number" stroke={AXIS_COLOR} tick={{ fontSize: 11 }} allowDecimals={false} />
               <YAxis
                 type="category"
                 dataKey="label"
                 stroke={AXIS_COLOR}
-                tick={{ fontSize: 10 }}
-                width={140}
+                tick={<TruncatedTick maxLength={24} />}
+                width={170}
+                interval={0}
               />
               <Tooltip contentStyle={TOOLTIP_STYLE} />
               <Bar dataKey="count" name="İhale sayısı" fill={CHART_COLORS[0]} radius={[0, 3, 3, 0]} />
