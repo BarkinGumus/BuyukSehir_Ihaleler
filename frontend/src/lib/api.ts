@@ -182,6 +182,7 @@ export interface ScraperJobState {
   result: { new_count: number; updated_count: number; skipped: number; total_fetched: number } | null;
   error: string | null;
   finished_at: string | null;
+  logs: string[];
 }
 
 export type ScraperStatusResponse = Record<ScraperSource, ScraperJobState>;

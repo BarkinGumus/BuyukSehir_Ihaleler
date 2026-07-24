@@ -1,4 +1,6 @@
+import logging
 import threading
+from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from typing import Literal
@@ -31,10 +33,33 @@ class JobState(TypedDict):
     result: ScraperResult | None
     error: str | None
     finished_at: str | None
+    logs: list[str]
 
 
 def _idle_state() -> JobState:
-    return {"status": "idle", "result": None, "error": None, "finished_at": None}
+    return {"status": "idle", "result": None, "error": None, "finished_at": None, "logs": []}
+
+
+# Her scraper çalışması kendi thread'inde koşuyor (bkz. _executor) - bu thread-local,
+# "şu an bu thread hangi kaynağı çalıştırıyor" bilgisini tutuyor ki aşağıdaki log
+# handler'ı, root logger'a gelen HER log satırını (httpx'in "HTTP Request: ..."
+# satırları dahil) doğru kaynağın tamponuna yönlendirebilsin.
+_log_context = threading.local()
+_LOG_BUFFER_SIZE = 300
+_log_buffers: dict[str, deque[str]] = {source: deque(maxlen=_LOG_BUFFER_SIZE) for source in _SOURCE_MAP}
+
+
+class _SourceLogHandler(logging.Handler):
+    def emit(self, record: logging.LogRecord) -> None:
+        source = getattr(_log_context, "source", None)
+        if source is None:
+            return
+        _log_buffers[source].append(self.format(record))
+
+
+_log_handler = _SourceLogHandler()
+_log_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S"))
+logging.getLogger().addHandler(_log_handler)
 
 
 # run_one() (scraper.cli) tamamen senkron/bloklayıcı - httpx istekleri ve
@@ -63,12 +88,18 @@ def _set_state(source: str, **fields: object) -> None:
 
 def _run_and_record(source: str) -> None:
     """Thread havuzunda çalışan asıl iş - run_one() hiç değişmedi, sadece
-    sonucu/hatası kilit altında _job_state'e yazılıyor."""
+    sonucu/hatası kilit altında _job_state'e yazılıyor. _log_context.source
+    ayarlanınca, bu thread'de basılan her log satırı (httpx'in "HTTP Request:
+    ..." satırları dahil) otomatik olarak bu kaynağın tamponuna düşüyor."""
+    _log_context.source = source
     try:
         result = run_one(_SOURCE_MAP[source])
         _set_state(source, status="done", result=result, finished_at=_now_iso())
     except Exception as exc:  # scraper hatası admin panelinde görünsün diye yakalanıyor
+        _log_buffers[source].append(f"HATA: {exc}")
         _set_state(source, status="error", error=str(exc), finished_at=_now_iso())
+    finally:
+        _log_context.source = None
 
 
 def _try_start(source: str) -> bool:
@@ -82,6 +113,7 @@ def _try_start(source: str) -> bool:
         if _job_state[source]["status"] == "running":
             return False
         _job_state[source] = {"status": "running", "result": None, "error": None, "finished_at": None}
+    _log_buffers[source].clear()
     _executor.submit(_run_and_record, source)
     return True
 
@@ -89,7 +121,11 @@ def _try_start(source: str) -> bool:
 @router.get("/scrapers/status")
 def get_scrapers_status() -> dict[str, JobState]:
     with _job_lock:
-        return dict(_job_state)
+        state = dict(_job_state)
+    return {
+        source: {**job, "logs": list(_log_buffers[source])}  # type: ignore[misc]
+        for source, job in state.items()
+    }
 
 
 @router.post("/scrapers/{source}/run")

@@ -9,6 +9,7 @@ import {
   type ScraperJobState,
   type ScraperSource,
 } from "@/lib/api";
+import { TerminalPanel } from "./TerminalPanel";
 
 const SOURCE_LABELS: Record<ScraperSource, string> = {
   istanbul: "İBB",
@@ -141,6 +142,7 @@ export function ScraperControls() {
           />
         ))}
       </div>
+      <TerminalPanel status={status} />
     </div>
   );
 }
