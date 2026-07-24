@@ -10,11 +10,12 @@ import {
 } from "@tanstack/react-table";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
+import { FavoriteStar } from "./FavoriteStar";
 import { Pagination } from "./Pagination";
 import { TableRow } from "./TableRow";
 import { sourceLabel, TENDER_TYPE_LABELS, type Tender } from "@/lib/types";
 
-const GRID_COLS = "grid-cols-[3fr_1fr_1fr_1.5fr_1fr_1fr_1.5fr_1fr]";
+const GRID_COLS = "grid-cols-[auto_3fr_1fr_1fr_1.5fr_1fr_1fr_1.5fr_1fr]";
 
 const columnHelper = createColumnHelper<Tender>();
 
@@ -30,6 +31,11 @@ function isUpcoming(iso: string | null): boolean {
 // Kırpma (truncate + ellipsis) TableRow'daki hücre sarmalayıcısında (block
 // seviyeli div) uygulanıyor - burada sadece metin rengi/font stiline bakıyoruz.
 const columns = [
+  columnHelper.display({
+    id: "favorite",
+    header: "",
+    cell: (info) => <FavoriteStar tenderId={info.row.original.id} />,
+  }),
   columnHelper.accessor("title", {
     header: "İhale Konusu",
     cell: (info) => (

@@ -42,3 +42,14 @@ def require_admin(payload: dict = Depends(get_current_user)) -> dict:
     if metadata.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Bu işlem için admin yetkisi gerekiyor")
     return payload
+
+
+def require_user(payload: dict = Depends(get_current_user)) -> dict:
+    """Admin şartı yok - sadece giriş yapmış olması yeterli. Favoriler/kayıtlı
+    filtreler gibi 'her kullanıcının kendine ait' özellikler için kullanılıyor."""
+    return payload
+
+
+def current_user_id(payload: dict = Depends(require_user)) -> str:
+    """Clerk kullanıcı ID'si, JWT'nin standart 'sub' (subject) alanında."""
+    return payload["sub"]

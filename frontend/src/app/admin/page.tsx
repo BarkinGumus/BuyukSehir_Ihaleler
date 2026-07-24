@@ -4,6 +4,7 @@ import { useUser } from "@clerk/nextjs";
 import { Suspense } from "react";
 import { AdminTenderList } from "@/components/admin/AdminTenderList";
 import { ScraperControls } from "@/components/admin/ScraperControls";
+import { UserManagement } from "@/components/admin/UserManagement";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 
@@ -33,6 +34,7 @@ function AdminPageContent() {
             </span>
           ) : (
             <>
+              <UserManagement />
               <ScraperControls />
               <AdminTenderList />
             </>

@@ -4,7 +4,13 @@ import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { deleteTender, getTenders, updateTender, type TenderUpdatePayload } from "@/lib/api";
+import {
+  bulkDeleteTenders,
+  deleteTender,
+  getTenders,
+  updateTender,
+  type TenderUpdatePayload,
+} from "@/lib/api";
 import { sourceLabel, type Tender } from "@/lib/types";
 import { useTenderFilters } from "@/hooks/useTenderFilters";
 import { ActiveFilterTags } from "@/components/ActiveFilterTags";
@@ -26,6 +32,7 @@ export function AdminTenderList() {
   const { filters } = useTenderFilters();
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<Tender | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
   // Filtreler değişince sayfa 1'e dönsün - page.tsx'teki ile aynı desen.
   const [prevFilters, setPrevFilters] = useState(filters);
@@ -77,18 +84,77 @@ export function AdminTenderList() {
     onSuccess: invalidateAll,
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids: number[]) => {
+      const token = await getToken();
+      if (!token) throw new Error("Oturum bulunamadı");
+      return bulkDeleteTenders(ids, token);
+    },
+    onSuccess: () => {
+      invalidateAll();
+      setSelectedIds(new Set());
+    },
+  });
+
+  function toggleSelected(id: number) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  const pageIds = data?.items.map((t) => t.id) ?? [];
+  const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.has(id));
+
+  function toggleSelectAllOnPage() {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allPageSelected) {
+        pageIds.forEach((id) => next.delete(id));
+      } else {
+        pageIds.forEach((id) => next.add(id));
+      }
+      return next;
+    });
+  }
+
   return (
     <div className="flex flex-col gap-4">
-      <h3 className="font-headline-sm text-headline-sm font-semibold text-on-surface">
-        İhale Yönetimi
-      </h3>
+      <div className="flex items-center justify-between">
+        <h3 className="font-headline-sm text-headline-sm font-semibold text-on-surface">
+          İhale Yönetimi
+        </h3>
+        {selectedIds.size > 0 && (
+          <button
+            type="button"
+            onClick={() => {
+              if (confirm(`${selectedIds.size} ihale silinsin mi?`)) {
+                bulkDeleteMutation.mutate(Array.from(selectedIds));
+              }
+            }}
+            disabled={bulkDeleteMutation.isPending}
+            className="flex h-input-height items-center gap-2 rounded bg-red-500/10 px-3 font-label-compact text-label-compact text-red-400 hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Trash2 size={14} />
+            Seçilenleri Sil ({selectedIds.size})
+          </button>
+        )}
+      </div>
       <div className="flex w-full flex-col gap-element-gap">
         <SearchBar />
         <FilterBar />
         <ActiveFilterTags resultCount={data?.total ?? 0} />
       </div>
       <div className="flex flex-col overflow-hidden rounded border border-outline-variant/14 bg-surface">
-        <div className="grid grid-cols-[3fr_1fr_1fr_1fr_auto] items-center gap-4 border-b border-outline-variant bg-surface-container-lowest px-4 py-2 font-label-compact text-[12px] uppercase text-on-surface-variant">
+        <div className="grid grid-cols-[auto_3fr_1fr_1fr_1fr_auto] items-center gap-4 border-b border-outline-variant bg-surface-container-lowest px-4 py-2 font-label-compact text-[12px] uppercase text-on-surface-variant">
+          <input
+            type="checkbox"
+            checked={allPageSelected}
+            onChange={toggleSelectAllOnPage}
+            aria-label="Sayfadaki hepsini seç"
+          />
           <span>İhale Konusu</span>
           <span>Şehir</span>
           <span>Kaynak</span>
@@ -98,8 +164,14 @@ export function AdminTenderList() {
         {data?.items.map((tender) => (
           <div
             key={tender.id}
-            className="grid grid-cols-[3fr_1fr_1fr_1fr_auto] items-center gap-4 border-b border-outline-variant/60 px-4 py-3 last:border-b-0"
+            className="grid grid-cols-[auto_3fr_1fr_1fr_1fr_auto] items-center gap-4 border-b border-outline-variant/60 px-4 py-3 last:border-b-0"
           >
+            <input
+              type="checkbox"
+              checked={selectedIds.has(tender.id)}
+              onChange={() => toggleSelected(tender.id)}
+              aria-label={`${tender.title} seç`}
+            />
             <span className="truncate text-body-default text-on-surface" title={tender.title}>
               {tender.title}
             </span>

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routers import admin, analytics, tenders
+from api.routers import admin, analytics, favorites, tenders
 
 app = FastAPI(title="Büyükşehir İhaleler API")
 
@@ -15,6 +15,7 @@ app.add_middleware(
 app.include_router(tenders.router)
 app.include_router(admin.router)
 app.include_router(analytics.router)
+app.include_router(favorites.router)
 
 
 @app.get("/health")

@@ -195,6 +195,36 @@ export async function triggerScraper(source: ScraperSource | "all", token: strin
   return authedRequest<{ started: string[] }>(`/admin/scrapers/${source}/run`, token, { method: "POST" });
 }
 
+// --- Kullanıcı yönetimi ---
+
+export type UserRole = "admin" | "viewer";
+
+export interface AdminUser {
+  id: string;
+  email: string | null;
+  role: UserRole;
+}
+
+export async function getUsers(token: string): Promise<AdminUser[]> {
+  return authedRequest<AdminUser[]>("/admin/users", token);
+}
+
+export async function updateUserRole(userId: string, role: UserRole, token: string): Promise<void> {
+  await authedRequest<void>(`/admin/users/${userId}/role`, token, {
+    method: "PATCH",
+    body: JSON.stringify({ role }),
+  });
+}
+
+// --- Toplu işlemler ---
+
+export async function bulkDeleteTenders(ids: number[], token: string): Promise<{ deleted: number }> {
+  return authedRequest<{ deleted: number }>("/tenders/bulk-delete", token, {
+    method: "POST",
+    body: JSON.stringify({ ids }),
+  });
+}
+
 // --- Analiz paneli (/dashboard) ---
 
 export interface KpiData {
@@ -345,4 +375,22 @@ export async function getContent(filters: AnalyticsFilters): Promise<ContentData
     byProcedure: data.by_procedure,
     topKeywords: data.top_keywords,
   };
+}
+
+// --- Favoriler ---
+
+export async function getFavoriteIds(token: string): Promise<number[]> {
+  return authedRequest<number[]>("/favorites/ids", token);
+}
+
+export async function getFavorites(token: string): Promise<Tender[]> {
+  return authedRequest<Tender[]>("/favorites", token);
+}
+
+export async function addFavorite(tenderId: number, token: string): Promise<void> {
+  await authedRequest<void>(`/favorites/${tenderId}`, token, { method: "POST" });
+}
+
+export async function removeFavorite(tenderId: number, token: string): Promise<void> {
+  await authedRequest<void>(`/favorites/${tenderId}`, token, { method: "DELETE" });
 }

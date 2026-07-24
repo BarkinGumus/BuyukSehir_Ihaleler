@@ -53,6 +53,14 @@ class TenderUpdate(BaseModel):
     institution: str | None = None
 
 
+class BulkDeleteRequest(BaseModel):
+    ids: list[int]
+
+
+class BulkDeleteOut(BaseModel):
+    deleted: int
+
+
 class TenderListOut(BaseModel):
     items: list[TenderOut]
     total: int

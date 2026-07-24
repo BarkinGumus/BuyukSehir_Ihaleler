@@ -7,7 +7,15 @@ from sqlalchemy.orm import Session
 
 from api.auth import require_admin
 from api.deps import get_db
-from api.schemas import TenderFilterOptionsOut, TenderListOut, TenderOut, TenderStatsOut, TenderUpdate
+from api.schemas import (
+    BulkDeleteOut,
+    BulkDeleteRequest,
+    TenderFilterOptionsOut,
+    TenderListOut,
+    TenderOut,
+    TenderStatsOut,
+    TenderUpdate,
+)
 from scraper.db.models import Tender
 from scraper.models import TenderType
 from scraper.text_utils import turkish_lower, turkish_sort_key
@@ -94,6 +102,15 @@ def get_filter_options(db: Session = Depends(get_db)) -> TenderFilterOptionsOut:
         institutions=institutions,
         units=units,
     )
+
+
+@router.post("/bulk-delete", response_model=BulkDeleteOut, dependencies=[Depends(require_admin)])
+def bulk_delete_tenders(body: BulkDeleteRequest, db: Session = Depends(get_db)) -> BulkDeleteOut:
+    deleted = (
+        db.query(Tender).filter(Tender.id.in_(body.ids)).delete(synchronize_session=False)
+    )
+    db.commit()
+    return BulkDeleteOut(deleted=deleted)
 
 
 @router.get("", response_model=TenderListOut)

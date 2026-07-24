@@ -9,6 +9,7 @@ import {
   LogOut,
   Settings,
   ShieldCheck,
+  Star,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -21,7 +22,7 @@ const linkClass =
   "flex h-8 items-center gap-3 pl-4 font-body-default text-body-default text-on-surface-variant hover:text-on-surface";
 
 export function Sidebar() {
-  const { user } = useUser();
+  const { user, isSignedIn } = useUser();
   const pathname = usePathname();
   const isAdmin = user?.publicMetadata?.role === "admin";
 
@@ -48,6 +49,14 @@ export function Sidebar() {
             <span>İhaleler</span>
           </Link>
         </li>
+        {isSignedIn && (
+          <li>
+            <Link href="/favorites" className={pathname === "/favorites" ? activeLinkClass : linkClass}>
+              <Star size={16} />
+              <span>Favoriler</span>
+            </Link>
+          </li>
+        )}
         {/* Henüz sayfası olmayan gezinme öğeleri - şimdilik pasif (tıklanamaz) */}
         <li>
           <span className={inactiveLinkClass}>

@@ -5,11 +5,13 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from typing import Literal
 
+from pydantic import BaseModel
 from typing_extensions import TypedDict
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from api.auth import require_admin
+from api import clerk_client
+from api.auth import get_current_user, require_admin
 from scraper.cli import run_one
 from scraper.scrapers.registry import SCRAPERS
 
@@ -143,3 +145,31 @@ def trigger_scraper(source: str) -> dict:
     if not _try_start(source):
         raise HTTPException(status_code=409, detail="Bu kaynak zaten çalışıyor")
     return {"started": [source]}
+
+
+class UserOut(BaseModel):
+    id: str
+    email: str | None
+    role: Literal["admin", "viewer"]
+
+
+class UpdateRoleRequest(BaseModel):
+    role: Literal["admin", "viewer"]
+
+
+@router.get("/users", response_model=list[UserOut])
+def list_users() -> list[dict]:
+    return clerk_client.list_users()
+
+
+@router.patch("/users/{user_id}/role")
+def update_user_role(
+    user_id: str,
+    body: UpdateRoleRequest,
+    current_user: dict = Depends(get_current_user),
+) -> dict:
+    # Tek admin olan biri kendi rolünü yanlışlıkla kaldırıp kilitlenmesin diye.
+    if current_user.get("sub") == user_id:
+        raise HTTPException(status_code=400, detail="Kendi rolünü değiştiremezsin")
+    clerk_client.update_user_role(user_id, body.role)
+    return {"ok": True}
