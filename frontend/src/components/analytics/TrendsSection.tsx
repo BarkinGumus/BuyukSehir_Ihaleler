@@ -6,6 +6,8 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Line,
+  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -69,13 +71,20 @@ export function TrendsSection({ filters }: { filters: AnalyticsFilters }) {
           )}
         </div>
         <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={data?.series}>
+          <LineChart data={data?.series}>
             <CartesianGrid stroke={GRID_COLOR} strokeDasharray="3 3" />
             <XAxis dataKey="label" stroke={AXIS_COLOR} tick={{ fontSize: 11 }} />
             <YAxis stroke={AXIS_COLOR} tick={{ fontSize: 11 }} allowDecimals={false} />
             <Tooltip contentStyle={TOOLTIP_STYLE} />
-            <Bar dataKey="count" name="İhale sayısı" fill={CHART_COLORS[0]} radius={[3, 3, 0, 0]} />
-          </BarChart>
+            <Line
+              type="monotone"
+              dataKey="count"
+              name="İhale sayısı"
+              stroke={CHART_COLORS[0]}
+              strokeWidth={2}
+              dot={{ r: 4 }}
+            />
+          </LineChart>
         </ResponsiveContainer>
       </ChartCard>
 
