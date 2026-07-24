@@ -6,7 +6,6 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
-  Legend,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -47,23 +46,28 @@ export function ContentSection({ filters }: { filters: AnalyticsFilters }) {
         >
           <ResponsiveContainer width="100%" height={260}>
             <PieChart>
-              <Pie
-                data={typeData}
-                dataKey="count"
-                nameKey="label"
-                cx="50%"
-                cy="50%"
-                outerRadius={90}
-                label={(entry) => `${entry.name}`}
-              >
+              <Pie data={typeData} dataKey="count" nameKey="label" cx="50%" cy="50%" outerRadius={90}>
                 {typeData.map((_, i) => (
                   <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip contentStyle={TOOLTIP_STYLE} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
             </PieChart>
           </ResponsiveContainer>
+          {/* Recharts'ın kendi Legend'ı küçük dilimlerin (örn. "Kat Karşılığı", 3
+              ihale) sayısını göstermiyor, sadece hover'da tooltip çıkıyor - bu yüzden
+              her kategoriyi sayısıyla birlikte her zaman gösteren kendi listemizi kullanıyoruz. */}
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
+            {typeData.map((d, i) => (
+              <span key={d.label} className="flex items-center gap-1.5 text-[11px] text-on-surface-variant">
+                <span
+                  className="h-2.5 w-2.5 flex-shrink-0 rounded-sm"
+                  style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }}
+                />
+                {d.label} ({d.count})
+              </span>
+            ))}
+          </div>
         </ChartCard>
 
         <ChartCard
@@ -98,10 +102,17 @@ export function ContentSection({ filters }: { filters: AnalyticsFilters }) {
         isEmpty={keywordData.length === 0}
       >
         <ResponsiveContainer width="100%" height={320}>
-          <BarChart data={keywordData} layout="vertical" margin={{ left: 16 }}>
+          <BarChart data={keywordData} layout="vertical" margin={{ left: 16, top: 8 }}>
             <CartesianGrid stroke={GRID_COLOR} strokeDasharray="3 3" />
             <XAxis type="number" stroke={AXIS_COLOR} tick={{ fontSize: 11 }} allowDecimals={false} />
-            <YAxis type="category" dataKey="word" stroke={AXIS_COLOR} tick={{ fontSize: 11 }} width={90} />
+            <YAxis
+              type="category"
+              dataKey="word"
+              stroke={AXIS_COLOR}
+              tick={{ fontSize: 11 }}
+              width={90}
+              interval={0}
+            />
             <Tooltip contentStyle={TOOLTIP_STYLE} />
             <Bar dataKey="count" name="Geçme sayısı" fill={CHART_COLORS[3]} radius={[0, 3, 3, 0]} />
           </BarChart>

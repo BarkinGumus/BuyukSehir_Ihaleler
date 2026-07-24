@@ -6,8 +6,6 @@ import {
   BarChart,
   CartesianGrid,
   Legend,
-  Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -110,25 +108,22 @@ export function InstitutionsSection({ filters }: { filters: AnalyticsFilters }) 
         isEmpty={monthlyData.length === 0}
       >
         <ResponsiveContainer width="100%" height={240}>
-          <LineChart data={monthlyData}>
+          <BarChart data={monthlyData}>
             <CartesianGrid stroke={GRID_COLOR} strokeDasharray="3 3" />
             <XAxis dataKey="month" stroke={AXIS_COLOR} tick={{ fontSize: 11 }} />
             <YAxis stroke={AXIS_COLOR} tick={{ fontSize: 11 }} allowDecimals={false} />
             <Tooltip contentStyle={TOOLTIP_STYLE} />
             <Legend wrapperStyle={{ fontSize: 10 }} />
             {top5Names.map((name, i) => (
-              <Line
+              <Bar
                 key={name}
-                type="monotone"
                 dataKey={name}
                 name={name}
-                stroke={CHART_COLORS[i % CHART_COLORS.length]}
-                strokeWidth={2}
-                dot={false}
-                connectNulls
+                fill={CHART_COLORS[i % CHART_COLORS.length]}
+                radius={[2, 2, 0, 0]}
               />
             ))}
-          </LineChart>
+          </BarChart>
         </ResponsiveContainer>
       </ChartCard>
     </div>
